@@ -46,11 +46,13 @@ var dataRoundingRule =[
 ]
 
 var dataVariableTable = [
-    ['CONTRACTS',''],
-    ['CHARGES',''],
-    ['FUNCTIONS',''],
-    ['TEXT',''],
-    ['DWSA',''],
+    ['FUNCTIONS','','',''],
+    ['TEXT','','',''],
+    ['CHARGES','','',''],
+    ['CONTRACTS','Contract data','',''],
+    ['DWSA','DWSA data','',''],
+    ['STLBID','Settlement Data Per Billing ID','',''],
+    ['STLSEIN','Settlement Data Per SEIN','','']
 ]
 
 var dataVariables = [
@@ -172,6 +174,13 @@ var dataVariables = [
     ['DWSA','DWSA_NPCDEBT_V','NPC Stranded Debts VAT','Php','RR_AMOUNT','','Yes'],
     ['DWSA','DWSA_DUSCC_V','DU Stranded Contract Costs VAT','Php','RR_AMOUNT','','Yes'],
     ['DWSA','DWSA_EQTAXROY_V','Equalization of Taxes and Royalties VAT','Php','RR_AMOUNT','','Yes'],
+    ['PLANTMD','PL_GEN','Plant Generation','kWh','RR_KWH','','Yes'],
+    ['PLANTMD','PL_COALMT','Coal Consumption','kWh','RR_MT','','Yes'],
+    ['PLANTMD','PL_DCP','Delivered Coal Price','Php/MT','RR_PMT','','Yes'],
+    ['STLBID','STL_BCQPRE','Settlement BCQ Prelim','','RR_KWH','','Yes'],
+    ['STLBID','STL_BCQFNL','Settlement BCQ Final','','RR_KWH','','Yes'],
+    ['STLSEIN','STL_MQPRE','Settlement BCQ Prelim','','RR_KWH','','Yes'],
+    ['STLSEIN','STL_MQFNL','Settlement BCQ Final','','RR_KWH','','Yes'],
 ]
 
 function dataVariablesFilter(tables = [],include=true) {
@@ -239,7 +248,7 @@ var dataTemplates =[
 
 
 
-var dataTemplateVariable =[
+var dataTemplateVariables =[
     ['PSADU_V01.00',1,'---Indices---','','Print'],
     ['PSADU_V01.00',2,'[IX_FOREX] FOREX, Usd/Php','','Print'],
     ['PSADU_V01.00',3,'[C_FOREXB] Base FOREX, Usd/Php','','Print'],
@@ -260,6 +269,28 @@ var dataTemplateVariable =[
     ['PSADU_V01.00',18,'[C_VOM] Variable O&M Fee, Php/kWh','','Print'],
     ['PSADU_V01.00',19,'[C_ER194] ER-194, Php/kWh','','Print'],
     ['PSADU_V01.00',20,'[V_FUELR] Fuel Rate, Php/kWh','[PL_DCP]*[PL_COALMT]/[PL_GEN]','Print'],
+    ['PSARES_V01.00',1,'---Plant Data---','','Print'],
+    ['PSARES_V01.00',2,'[PL_GEN] Plant Generation, kWh','','Print'],
+    ['PSARES_V01.00',3,'[PL_COALMT] Coal Consumption, MT','','Print'],
+    ['PSARES_V01.00',4,'[PL_DCP] Delivered Coal Price, Php/MT','','Print'],
+    ['PSARES_V01.00',5,'---Quantities---','',''],
+    ['PSARES_V01.00',6,'[STL_BCQ] Settlement Data BCQ, kWh','','Save'],
+    ['PSARES_V01.00',7,'[V_EN] Energy Delivered, kWh','SUM([STL_BCQ])','Print'],
+    ['PSARES_V01.00',8,'---Rates---','',''],
+    ['PSARES_V01.00',9,'[C_VC] Variable Charge, Php/kWh','','Print'],
+    ['PSARES_V01.00',10,'[C_ADMIN] Admin Charge, Php/kWh','','Print'],
+    ['PSARES_V01.00',11,'[C_ER194] ER-194, Php/kWh','','Print'],
+    ['PSARES_V01.00',12,'[V_FUELR] Fuel Rate, Php/kWh','[PL_DCP]*[PL_COALMT]/[PL_GEN]','Print'],
+]
+
+var dataTemplateCharges = [
+    ['PSADU_V01.00',1,'---Fixed Charge---','','','',''],
+    ['PSADU_V01.00',2,'[CRF]Capital Recovery Fee, PHP','[C_CC]*1000','[C_CRF]*[V_IX]','ROUND([A]*[B],2)','[C]*[VAT]'],
+    ['PSADU_V01.00',3,'[FOM]Fixed O&M Fee, PHP','[C_CC]*1000','[C_CRF]','ROUND([A]*[B],2)','[C]*[VAT]'],
+    ['PSADU_V01.00',4,'---Generation Charge---','','','',''],
+    ['PSADU_V01.00',5,'[FUEL] Fuel Charge, Php','[V_EN]','[V_FUELR]','ROUND([A]*[B],2)	','[C]*[VAT]'],
+    ['PSADU_V01.00',6,'[VOM] Variable O&M Fee, PHP','[V_EN]','[C_VOM]-[C_ER194]','ROUND([A]*[B],2)','[C]*[VAT]'],
+    ['PSADU_V01.00',7,'[ER194] ER-194, PHP','[V_EN]','[C_ER194]','ROUND([A]*[B],2)','0'],
 ]
 
 
