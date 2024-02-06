@@ -342,8 +342,7 @@
   }
   
   function calculationControlsAuth(){
-    var user = getUser();
-    var trs = $('#dataTable tbody tr')    
+    var user = getUser();  
     table.rows().every(function() {
       var rowData = this.data();
       var status = rowData[6];

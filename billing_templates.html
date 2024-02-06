@@ -223,29 +223,7 @@
                 </div>
                 <div class="form-group">
                   <label for="variable">Variable*</label>
-                  <select class="form-control" id="variable" required>
-                    <option class="optVAR" value="[C_CC] Contracted Capacity, MW">[C_CC] Contracted Capacity, MW</option>
-                    <option class="optVAR" value="[C_CRF] Capital Recovery Fee, Php/kWh">[C_CRF] Capital Recovery Fee, Php/kWh</option>
-                    <option class="optVAR" value="[C_FOM] Fixed O&M Fee, Php/MW">[C_FOM] Fixed O&M Fee, Php/MW</option>
-                    <option class="optVAR" value="[C_VOM] Variable O&M Fee, Php/kWh">[C_VOM] Variable O&M Fee, Php/kWh</option>
-                    <option class="optVAR" value="[C_ER194] ER-194, Php/kWh">[C_ER194] ER-194, Php/kWh</option>
-                    <option class="optVAR" value="[C_FOREXB] FOREX Base, Usd/Php">[C_FOREXB] FOREX Base, Usd/Php</option>
-                    <option class="optVAR" value="[C_NCRCPIB] NCR CPI Base,">[C_NCRCPIB] NCR CPI Base,</option>
-                    <option class="optVAR" value="[IX_FOREX] FOREX, Usd/Php">[IX_FOREX] FOREX, Usd/Php</option>
-                    <option class="optVAR" value="[IX_NCRCPI] NCR CPI">[IX_NCRCPI] NCR CPI</option>
-                    <option class="optVAR" value="[PL_COALMT] Coal Consumption, MT">[PL_COALMT] Coal Consumption, MT</option>
-                    <option class="optVAR" value="[PL_DCP] Delivered Coal Price, Php/MT">[PL_DCP] Delivered Coal Price, Php/MT</option>
-                    <option class="optVAR" value="[PL_GEN] Plant Generation, kWh">[PL_GEN] Plant Generation, kWh</option>
-                    <option class="optCALCVAR" value="[V_EN] Energy Delivered, kWh">[V_EN] Energy Delivered, kWh</option>
-                    <option class="optCALCVAR" value="[V_FUELR] Fuel Rate, Php/kWh">[V_FUELR] Fuel Rate, Php/kWh</option>
-                    <option class="optCALCVAR" value="[V_IX] Index,">[V_IX] Index,</option>
-                    <option class="optText" value="---Indices---">---Indices---</option>
-                    <option class="optText" value="---Plant Data---">---Plant Data---</option>
-                    <option class="optText" value="---Quantities---">---Quantities---</option>
-                    <option class="optText" value="---Rates---">---Rates---</option>
-                    <option class="optText" value="---Fixed Charge---">---Fixed Charge---</option>
-                    <option class="optText" value="---Generation Charge---">---Generation Charge---</option>
-                  </select>
+                  <select class="form-control" id="variable" required></select>
                 </div>       
                 <div class="form-group">
                   <label for="formula">Formula*</label>
@@ -624,15 +602,15 @@
   function addVariable(button) {
     var table = tableVariables;
     var frm = button.closest('form');
-    // Get values from the form
+
     var index = frm.querySelector("#index").value;
     var variable = frm.querySelector("#variable").value;
     var formula = frm.querySelector("#formula").value;
     var type = frm.querySelector("#type").value;
 
     if (!index ||!variable 
-      ||($('#variable').find("option:selected").hasClass("optCALCVAR") && !formula)
-      ||(!$('#variable').find("option:selected").hasClass("optText") && !type)) {
+      ||($('#variable').find("option:selected").hasClass("optFUNCTIONS") && !formula)
+      ||(!$('#variable').find("option:selected").hasClass("optTEXT") && !type)) {
       alert("Please enter valid data.");
       return;
     }
@@ -722,7 +700,7 @@
   function addCharge(button) {
     var table = tableCharges;
     var frm = button.closest('form');
-    // Get values from the form
+    
     var index = frm.querySelector("#index").value;
     var charge = frm.querySelector("#charge").value;
     var formulab = frm.querySelector("#formulab").value;
@@ -730,7 +708,7 @@
     var formulaa = frm.querySelector("#formulaa").value;
     var formulav = frm.querySelector("#formulav").value;
 
-    if (!index || (!formulaa && !$('#charge').find("option:selected").hasClass("optText"))) {
+    if (!index || (!formulaa && !$('#charge').find("option:selected").hasClass("optTEXT"))) {
       alert("Please enter valid data.");
       return;
     }
@@ -816,20 +794,35 @@
   }
   
   $("#variable").change(function () {
-      isCalcVar = $(this).find("option:selected").hasClass("optCALCVAR");
-      isText = $(this).find("option:selected").hasClass("optText");
+      isCalcVar = $(this).find("option:selected").hasClass("optFUNCTIONS");
+      isText = $(this).find("option:selected").hasClass("optTEXT");
       $("#formula").prop("readonly", !isCalcVar);
       $("#type").prop("disabled", isText);
   });
   
   $("#charge").change(function () {
-      isText = $(this).find("option:selected").hasClass("optText");
+      isText = $(this).find("option:selected").hasClass("optTEXT");
       $("#formulab").prop("readonly", isText);
       $("#formulap").prop("readonly", isText);
       $("#formulaa").prop("readonly", isText);
       $("#formulav").prop("readonly", isText);
   });
 
+  function getVariableList(tables = [],include=true) {
+    var arr = [];    
+    $.each(dataVariables, function(index, row) {
+        var check =tables.includes(row[0])
+        if (!include) check=!check;
+        if (check||tables.length === 0) {
+            arr.push([`[${row[1]}] ${row[2]}, ${row[3]}`,'opt'+row[0]]);
+        }
+    });
+    return arr;
+  }
+
+
+  updateSelectOption($('#variable'),getVariableList(['CHARGES'],false),'',1);
+  updateSelectOption($('#charge'),getVariableList(['CHARGES','TEXT']),'',1);
 </script>
 </body>
 </html>

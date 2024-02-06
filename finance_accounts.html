@@ -6,15 +6,50 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <title>Finance Accounts</title>
+  <style>   
+
+    td .btn-sm{
+      width: 80px;
+      margin: 0px 2px;
+      height: 25px;
+      font-size: 12px;
+    }  
+    .table {
+        padding: 0;
+    }
+    .table th, .table td, .table tr {
+      padding-top: 2px;
+      padding-bottom: 5px;
+      font-size: 14px;
+    }
+    .colindex {
+      width: 3px;
+    }
+    td:last-child {
+      display: flex;      
+    }
+    .btnsubmit{
+      width: 120px;
+      margin: 10px;
+    }
+  </style>
 </head>
 <body>
+  
+  <div class="container mt-4">
 
-<div class="container mt-4">
-  
-  
   <h2>Finance Accounts</h2>
-  <!--  Filter -->
+  
 
+  <div class="form-row my-2">
+    <div class="form-group">
+      <select class="form-control" id="tableFilter" onchange="applyFilter()"></select>
+    </div>
+    <div class="mx-auto"></div>        
+    <div>
+      <button type="button" class="btn btn-primary" id="addNewButton" onclick="addNewModalShow()">Add New</button>
+    </div>
+  </div>
   <!-- Table -->
   <table class="table table-bordered" id="dataTable">
     <thead>
@@ -22,67 +57,49 @@
         <th>Code</th>
         <th>Text</th>
         <th>Description</th>
+        <th>Active</th>
+        <th>Created By</th>
+        <th>Created Time</th>
         <th></th>
       </tr>
     </thead>
-    <tbody>
-      <tr><td>CRFR</td><td>CRF Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>CRFE</td><td>CRF Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>FOMR</td><td>FOM Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>FOME</td><td>FOM Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>VOMR</td><td>VOM Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>VOME</td><td>VOM Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>ER194R</td><td>ER194 Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>ER194E</td><td>ER194 Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>FUELR</td><td>FUEL Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>FUELE</td><td>FUEL Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>VATR</td><td>VAT Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>VATE</td><td>VAT Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>   
-      <tr><td>RESSUPR</td><td>RES Supplier Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>RESSUPE</td><td>RES Supplier Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>RESVATR</td><td>RES VAT Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
-      <tr><td>RESVATE</td><td>RES VAT Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>   
-    </tbody>
+    <tbody></tbody>
   </table>
 
-  <!-- Add New Button -->
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal">
-    Add New
-  </button>
-</div>
 
-<!-- Add New Modal -->
-<div class="modal" id="addNewModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add/Edit Entry</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <!-- Form for adding new entries -->
-        <form id="addEntryForm">
-          <input type="hidden" id="editRowIndex" value="">              
-          <div class="form-group">
-            <label for="newCode">Code</label>
-            <input type="text" class="form-control" id="newCode" required>
-          </div>
-          <div class="form-group">
-            <label for="newText">Text</label>
-            <input type="text" class="form-control" id="newText" required>
-          </div>
-          <div class="form-group">
-            <label for="newDescription">Description</label>
-            <input type="text" class="form-control" id="newDescription" required>
-          </div>
-          <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
-        </form>
+  <div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add/Edit Entry</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addEntryForm">
+            <input type="hidden" id="editRowIndex" value=""> 
+            <input type="hidden" id="newActive" value="">
+            <div class="form-group">
+              <label for="newCode">Code*</label>
+              <input type="text" class="form-control" id="newCode">
+            </div>  
+            <div class="form-group">
+              <label for="newText">Text*</label>
+              <input type="text" class="form-control" id="newText">
+            </div>  
+            <div class="form-group">
+              <label for="newDescription">Description</label>
+              <input type="text" class="form-control" id="newDescription">
+            </div>  
+            <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -91,99 +108,179 @@
 <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
 
 <script src="navbar.js"></script>
+<script src="data.js"></script>
+
 <script>
-  var table; // Declare table variable globally
 
-  $(document).ready(function() {
-    // DataTable initialization
-    table = $('#dataTable').DataTable({
-      paging: true, // Enable pagination
-      searching: true, // Enable search bar
-      columns: [
-        { title: 'Code' },
-        { title: 'Text' },
-        { title: 'Text' },
-        { title: '' } // This is for the "Edit" button column
-      ]
-    });
+  var rowButtons = `<button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button>
+                    <button class="btn btn-info btn-sm editButton" onclick="activateEntry(this)">Activate</button>
+                    <button class="btn btn-danger btn-sm removeButton" onclick="deactivateEntry(this)">Deactivate</button>`
 
-    // Add New Entry button click event
-    $('#addNewModal').on('shown.bs.modal', function () {
-      // Clear form fields
-      document.getElementById("newCode").value = "";
-      document.getElementById("newText").value = "";
-      document.getElementById("newText").value = "";
-      // Enable Code field for new entry
-      document.getElementById("newCode").readOnly = false;      
-      document.getElementById("newText").disabled = false;
-      document.getElementById("newText").disabled = false;
-      // Reset edit flag
-      document.getElementById("editRowIndex").value = "";
+  function loadData(){
+    var data = []
+    $.each(dataFinanceAccount, function(index, row) {
+      row.push(getUser());
+      row.push(getCurrentTime());
+      row.push(rowButtons);
+      data.push(row)
     });
-  });
+    return data;
+  }
+  
+  var table = $('#dataTable').DataTable({
+    paging: true, // Enable pagination
+    searching: true, 
+    scrollX:true,
+    data:loadData()
+  });  
+
+  function addNewModalShow(){
+    var modal = $('#addNewModal');
+    modal.modal('show');
+  
+    modal = modal[0]
+    modal.querySelectorAll('input').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('textarea').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('select').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('input[type="number"]').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('#newIndex').forEach(function(obj) {
+      obj.value = 1;
+    });
+    
+  }
+
 
   function addNewEntry() {
-    // Get values from the form
     var newCode = document.getElementById("newCode").value;
     var newText = document.getElementById("newText").value;
-    var newText = document.getElementById("newText").value;
+    var newDescription = document.getElementById("newDescription").value;
+    var newCreatedBy = getUser();
+    var newCreatedTime = getCurrentTime();
+    var newActive = document.getElementById("newActive").value;
+    if(newActive=='')newActive='Yes';
 
-    // Validate input
-    if (!newCode || !newText || !newText) {
+    if (!newCode || !newText) {
       alert("Please enter valid data.");
       return;
     }
 
-    // Check if editing an existing entry
     var editing = document.getElementById("editRowIndex").value;
-    if (editing !== "") {
-      // Update existing row
-      var row = table.row(parseInt(editing)).node();
-      row.cells[0].innerText = newCode;
-      row.cells[1].innerText = newText;
-      row.cells[2].innerText = newText;
-
-      // Reset edit flag
-      document.getElementById("editRowIndex").value = "";
+    if (editing !== "") {      
+      var rowIndex = parseInt(editing);
+      var newData = table.row(rowIndex).data();
+      newData[0] = newCode;
+      newData[1] = newText;
+      newData[2] = newDescription;
+      newData[3] = newActive;
+      newData[4] = newCreatedBy;
+      newData[5] = newCreatedTime;
+      table.row(rowIndex).data(newData).draw();
     } else {
-      // Create a new table row
-      var newRow = table.row.add([newCode, newText, newText, '<button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button>']).draw().node();
-    }
+      for (var i = 0; i < table.rows().count(); i++) {
+        var rows = table.rows().data()[i]
+        if(rows[0]==newCode) {
+          alert(`The following record is already exist.                  
+  Code: ${newField}`);
+          return;
+        }
+      }
 
-    // Clear form fields
-    document.getElementById("newCode").value = "";
-    document.getElementById("newText").value = "";
-    document.getElementById("newText").value = "";
-
-    // Close the modal
+      var newRow = table.row.add([newCode, newText, newDescription, newActive, newCreatedBy, newCreatedTime, 
+                      `<td>${rowButtons}</td>`,
+      ]).draw().node();
+    }    
     $('#addNewModal').modal('hide');
+    calculationControlsAuth();
   }
-
+  
   function editEntry(button) {
-  // Retrieve the DataTable instance
-    var table = $('#dataTable').DataTable();
-    // Retrieve the values from the selected row
     var row = button.closest('tr');
-    var Code = row.cells[0].innerText;
-    var Text = row.cells[1].innerText;
-    var Description = row.cells[2].innerText;
 
+    var code = row.cells[0].innerText;
+    var text= row.cells[1].innerText;
+    var description = row.cells[2].innerText;
+    var active = row.cells[3].innerText;
 
-    // Open the modal for editing
-    $('#addNewModal').modal('show');
-    // Set the values in the modal for editing
-    document.getElementById("newCode").value = Code;
-    document.getElementById("newText").value = Text;
-    document.getElementById("newText").value = Description;
+    addNewModalShow();
 
-    // Set the readonly attribute for Code field
+    document.getElementById("newCode").value = code;
+    document.getElementById("newText").value = text;
+    document.getElementById("newDescription").value = description;
+    document.getElementById("newActive").value = active;
+
     document.getElementById("newCode").disabled = true;
 
-    // Set the index of the row being edited
     document.getElementById("editRowIndex").value = table.row(row).index();
   }
 
+  function activateEntry(button){
+    var confirmation = confirm("Are you sure you want to activate this entry?");
+    if (confirmation) { 
+        var row = button.closest('tr');
+        alert(`Finance Account Activated.`);
+        var rowIndex = table.row(row).index();
+        var newData = table.row(rowIndex).data();
+        newData[3] = 'Yes';
+        table.row(rowIndex).data(newData).draw();
+        calculationControlsAuth();   
+    }
+  }
+
+  function deactivateEntry(button){
+    var confirmation = confirm("Are you sure you want to de-activate this entry?");
+    if (confirmation) { 
+        var row = button.closest('tr');
+        alert(`Finance Account De-activated.`);
+        var rowIndex = table.row(row).index();
+        var newData = table.row(rowIndex).data();
+        newData[3] = 'No';
+        table.row(rowIndex).data(newData).draw();
+        calculationControlsAuth();   
+    }
+  }
+
+  function calculationControlsAuth(){
+    var user = getUser(); 
+    table.rows().every(function() {
+      var rowData = this.data();
+      var active = rowData[3];
+      var tdControls = this.node().children[6];
+      tdControls.children[0].style.display = active=="Yes"&&user=="MKTG"?"block":"none";
+      tdControls.children[1].style.display = active=="No"&&user=="MKTG"?"block":"none";
+      tdControls.children[2].style.display = active=="Yes"&&user=="MKTG"?"block":"none";
+    })
+    table.columns.adjust().draw();
+  }
+  calculationControlsAuth();
+  function handleUserChange() {
+    calculationControlsAuth();
+  }
+  
+  updateSelectOption($('#newField'),dataFields); 
+
+
+  updateSelectOption($('#tableFilter'),dataFields,'All Fields'); 
+
+  function applyFilter() {
+    var tableFilter= document.getElementById("tableFilter").value;
+    table.column(0).search(tableFilter).draw();
+  }
+
+
 </script>
+
 
 </body>
 </html>

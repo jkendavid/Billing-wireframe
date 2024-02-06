@@ -34,7 +34,6 @@ $('body').prepend(
             </a>
             <div class="dropdown-menu" aria-labelledby="servicesDropdown">
                 <a class="dropdown-item" href="variables.html">Variables</a>
-                <a class="dropdown-item" href="variable_units.html">Variables Units</a>
                 <a class="dropdown-item" href="field_values.html">Fields Data</a>
                 <a class="dropdown-item" href="finance_accounts.html">Finance Accounts</a>
                 <a class="dropdown-item" href="finance_account_link.html">Finance Accounts Link</a>
@@ -193,7 +192,7 @@ return JSON.parse(JSON.stringify(obj));
 }
 
 
-function updateSelectOption(opt,data,all=''){
+function updateSelectOption(opt,data,all='',classindex = null){
     var value = opt.val();
     opt.empty();
     if(all!=''){ 
@@ -204,9 +203,10 @@ function updateSelectOption(opt,data,all=''){
     }
 
     $.each(data, function(index, value) {
-        opt.append($('<option>', {
+        opt.append($(`<option>`, {
             value: value[0],
-            text: value[0]
+            text: value[0],
+            class: classindex!=null?value[classindex]:''
         }));
     });
     opt.val(value);
