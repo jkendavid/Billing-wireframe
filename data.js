@@ -78,7 +78,7 @@ var dataVariables = [
     ['TEXT','TXT_PLNT','Plant Data',''],
     ['TEXT','TXT_QTY','Quantities',''],
     ['TEXT','TXT_RATES','Rates',''],
-    ['TEXT','TXT_FXDC','Fixed Charge',''],
+    ['TEXT','TXT_FXC','Fixed Charge',''],
     ['TEXT','TXT_VARC','Variable Charge',''],
     ['TEXT','TXT_GENC','Generation Charge',''],
     ['TEXT','TXT_DWSA','DWSA',''],
@@ -140,8 +140,8 @@ var dataContractTemplates =[
 ]
 
 var dataTemplates =[
-    ['PSADU_V01.00','PSA Template for DU Version 1.0','APPROVED'],
-    ['PSARES_V01.00','PSA Template for RES Version 1.0','APPROVED'],
-    ['RSC_V01.00','RSC Template Version 1.0','APPROVED'],
+    ['PSADU_V01.00','PSA Template for DU Version 1.0','ACTIVE'],
+    ['PSARES_V01.00','PSA Template for RES Version 1.0','ACTIVE'],
+    ['RSC_V01.00','RSC Template Version 1.0','ACTIVE'],
 ]
 
