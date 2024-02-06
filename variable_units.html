@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <title>Variable Units</title>
+</head>
+<body>
+
+<div class="container mt-4">
+  
+
+  <h2>Variable Units</h2>
+
+  <!-- Table -->
+  <table class="table table-bordered" id="dataTable">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Text</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>PHP</td><td>Php</td><td>Amount</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+      <tr>
+        <td>KWH</td><td>KWh</td><td>Energy</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>MW</td><td>MW</td><td>Demand</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>USD</td><td>Usd</td><td></td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>PCT</td><td>%</td><td></td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>INDEX</td><td></td><td>Index</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>USDPHP</td><td>USD/PHP</td><td>USD /PHP Exchange Rate</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>COALMT</td><td>MT</td><td>Coal Consumptions</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+        <tr>
+        <td>COALCOST</td><td>PHP/MT</td><td>Coal Cost</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Add New Button -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal">
+    Add New
+  </button>
+</div>
+
+<!-- Add New Modal -->
+<div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Entry</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Form for adding new entries -->
+        <form id="addEntryForm">
+          <input type="hidden" id="editRowIndex" value="">
+          <div class="form-group">
+            <label for="newCode">Code</label>
+            <input type="text" class="form-control" id="newCode" required>
+          </div>
+          <div class="form-group">
+            <label for="newName">Text</label>
+            <input type="text" class="form-control" id="newName" required>
+          </div>
+          <div class="form-group">
+            <label for="newDescription">Description</label>
+            <input type="text" class="form-control" id="newDescription" required>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="navbar.js"></script>
+<script>
+  function addNewEntry() {
+    // Get values from the form
+    var newCode = document.getElementById("newCode").value;
+    var newName = document.getElementById("newName").value;
+    var newDescription = document.getElementById("newDescription").value;
+
+    // Validate input
+    if (!newCode || !newName) {
+      alert("Please enter valid data.");
+      return;
+    }
+
+    // Check if editing an existing entry
+    var editing = document.getElementById("editRowIndex").value;
+    if (editing !== "") {
+      // Update existing row
+      var row = document.getElementById("dataTable").rows[editing];
+      row.cells[1].innerText = newName;
+      row.cells[2].innerText = newDescription;
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    } else {
+      // Create a new table row
+      var newRow = document.createElement("tr");
+      newRow.innerHTML = "<td>" + newCode + "</td><td>" + newName + "</td><td>" + newDescription + "</td><td><button class='btn btn-info btn-sm' onclick='editEntry(this)'>Edit</button></td>";
+
+      // Append the new row to the table
+      document.getElementById("dataTable").getElementsByTagName('tbody')[0].appendChild(newRow);
+    }
+
+    // Clear form fields
+    document.getElementById("newCode").value = "";
+    document.getElementById("newName").value = "";
+    document.getElementById("newDescription").value = "";
+
+    // Close the modal
+    $('#addNewModal').modal('hide');
+  }
+
+  function editEntry(button) {
+    // Retrieve the values from the selected row
+    var row = button.closest('tr');
+    var code = row.cells[0].innerText;
+    var name = row.cells[1].innerText;
+    var description = row.cells[2].innerText;
+
+    // Set the values in the modal for editing
+    document.getElementById("newCode").value = code;
+    document.getElementById("newName").value = name;
+    document.getElementById("newDescription").value = description;
+
+    // Set the readonly attribute for Code field
+    document.getElementById("newCode").readOnly = true;
+
+    // Set the index of the row being edited
+    document.getElementById("editRowIndex").value = row.rowIndex;
+
+    // Open the modal for editing
+    $('#addNewModal').modal('show');
+  }
+</script>
+
+</body>
+</html>

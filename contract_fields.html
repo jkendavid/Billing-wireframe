@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <title>Contract Fields</title>
+  <style>   
+    td .btn-sm{
+      width: 80px;
+      margin: 0px 2px;
+      height: 25px;
+      font-size: 12px;
+    }  
+    .table {
+        padding: 0;
+    }
+    .table th, .table td, .table tr {
+      padding-top: 2px;
+      padding-bottom: 5px;
+      font-size: 14px;
+    }
+    .colindex {
+      width: 3px;
+    }
+    td:last-child {
+      display: flex;      
+    }
+    .btnsubmit{
+      width: 120px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container mt-4">
+
+  <h2>Contract Fields</h2>
+  
+
+  <div class="form-row my-2">
+    <div class="form-group">
+      <select class="form-control" id="contractFilter" onchange="applyContractFilter()">
+        <option value="">All Contracts</option>
+        <option value="PSA-GENCO1-DU01-001">PSA-GENCO1-DU01-001</option>
+        <option value="PSA-GENCO1-RES01-001">PSA-GENCO1-RES01-001</option>
+        <option value="PSA-RESO1-CC01-001">PSA-RESO1-CC01-001</option>
+      </select>
+    </div>
+    <div class="mx-auto"></div>        
+    <div>
+      <button type="button" class="btn btn-primary" id="addNewButton" onclick="addNewModalShow()">Add New</button>
+    </div>
+  </div>
+  <!-- Table -->
+  <table class="table table-bordered" id="dataTable">
+    <thead>
+      <tr>
+        <th style="min-width: 140px;">Contract</th>
+        <th>Field</th>
+        <th>Index</th>
+        <th>Rev. No.</th>
+        <th>Value</th>
+        <th>Period From</th>
+        <th>Period To</th>
+        <th>Status</th>
+        <th>Active</th>
+        <th>Remarks</th>
+        <th>Created By</th>
+        <th>Created Time</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>      
+      <tr>
+        <td>PSA-GENCO1-DU01-001</td>
+        <td>WESMSELBID</td>
+        <td>1</td>
+        <td>0</td>
+        <td>GEN01</td>
+        <td></td><td></td>
+        <td>NEW</td>
+        <td>No</td>
+        <td></td>
+        <td>MRKTG</td><td>2023-01-01  02:00</td>
+        <td>
+          <button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button>
+          <button class="btn btn-info btn-sm submitButton" onclick="submitEntry(this)">Submit</button>
+          <button class="btn btn-danger btn-sm removeButton" onclick="rejectEntry(this)">Remove</button>
+          <button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button>
+          <button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button>
+        </td>
+      </tr>
+      <tr>
+        <td>PSA-GENCO1-DU01-001</td>
+        <td>WESMBUYBID</td>
+        <td>1</td>
+        <td>0</td>
+        <td>DU01</td>
+        <td></td><td></td>
+        <td>NEW</td>
+        <td>No</td>
+        <td></td>
+        <td>MRKTG</td><td>2023-01-01  02:00</td>
+        <td>
+          <button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button>
+          <button class="btn btn-info btn-sm submitButton" onclick="submitEntry(this)">Submit</button>
+          <button class="btn btn-danger btn-sm removeButton" onclick="rejectEntry(this)">Remove</button>
+          <button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button>
+          <button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add/Edit Entry</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addEntryForm">
+            <input type="hidden" id="editRowIndex" value="">    
+            <input type="hidden" id="newRevNum" value="0">     
+            <input type="hidden" id="newStatus" value="">    
+            <div class="form-group">
+              <label for="newContract">Contract*</label>
+              <select class="form-control" id="newContract" required></select>
+            </div>
+            <div class="form-group">
+              <label for="newField">Field*</label>
+              <select class="form-control" id="newField" required onchange="optNewFieldChange()"></select>
+            </div>
+            <div class="form-group">
+              <label for="newIndex">Index</label>
+              <input type="number" class="form-control" id="newIndex" required min="0" max="20">
+          </div>
+            <div class="form-group">
+              <label for="newValue">Value*</label>
+              <select class="form-control" id="newValue" required></select>
+          </div>
+            <div class="form-group">
+              <label for="newPeriodFrom">Period From</label>
+              <input type="month" class="form-control" id="newPeriodFrom" required>
+            </div>
+            <div class="form-group">
+              <label for="newPeriodTo">Period To</label>
+              <input type="month" class="form-control" id="newPeriodTo" required>
+            </div>
+            <div class="form-group">
+              <label for="newRemarks">Remarks</label>
+              <input type="text" class="form-control" id="newRemarks">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="navbar.js"></script>
+<script src="data.js"></script>
+<script>
+
+var rowButtons =`<button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button>
+                <button class="btn btn-info btn-sm submitButton" onclick="submitEntry(this)">Submit</button>
+                <button class="btn btn-danger btn-sm removeButton" onclick="removeEntry(this)">Remove</button></td>
+                <button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button>
+                <button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button>`
+
+function loadData(){
+    var data = []
+    $.each(dataContractFields, function(index, row) {
+      row.push(getUser());
+      row.push(getCurrentTime());
+      row.push(rowButtons);
+      data.push(row)
+    });
+    return data;
+  }
+
+  var table = $('#dataTable').DataTable({
+    paging: true, // Enable pagination
+    searching: true, 
+    scrollX:true,
+    data:loadData()
+  });   
+
+  function addNewModalShow(){
+    var modal = $('#addNewModal');
+    modal.modal('show');
+  
+    modal = modal[0]
+    modal.querySelectorAll('input').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('textarea').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('select').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('input[type="number"]').forEach(function(obj) {
+      obj.value = "";
+      obj.disabled = false;
+    });
+    modal.querySelectorAll('#newIndex').forEach(function(obj) {
+      obj.value = 1;
+    });
+    
+  }
+
+  function addNewEntry() {
+    var newContract = document.getElementById("newContract").value;
+    var newField = document.getElementById("newField").value;
+    var newIndex = document.getElementById("newIndex").value;
+    var newValue = document.getElementById("newValue").value;
+    var newPeriodFrom = document.getElementById("newPeriodFrom").value;
+    var newPeriodTo = document.getElementById("newPeriodTo").value;
+    var newRemarks = document.getElementById("newRemarks").value;
+    var newRevNum = document.getElementById("newRevNum").value;
+    if(newRevNum =='')newRevNum='0'
+    var newStatus = document.getElementById("newStatus").value;
+    if(newStatus =='')newStatus='NEW'
+    var newActive = 'No';
+    var newCreatedBy = getUser();
+    var newCreatedTime = getCurrentTime();
+
+    if (!newContract || !newField || !newValue || !newIndex) {
+      alert("Please enter valid data.");
+      return;
+    }
+
+    var editing = document.getElementById("editRowIndex").value;
+    if (editing !== "") {      
+      var rowIndex = parseInt(editing);
+      var newData = table.row(rowIndex).data();
+      newData[0] = newContract;
+      newData[1] = newField
+      newData[2] = newIndex;
+      newData[3] = newRevNum;
+      newData[4] = newValue;
+      newData[5] = newPeriodFrom;
+      newData[6] = newPeriodTo;
+      newData[7] = newStatus;
+      newData[8] = newActive;
+      newData[9] = newRemarks;
+      newData[10] = newCreatedBy;
+      newData[11] = newCreatedTime;
+      table.row(rowIndex).data(newData).draw();
+    } else {
+      for (var i = 0; i < table.rows().count(); i++) {
+        var rows = table.rows().data()[i]
+        if(rows[0]==newContract && rows[1]==newField && rows[2]==newIndex && rows[3]==newRevNum && rows[7]!="REMOVED") {
+          alert(`The following record is already exist.                  
+  Contract: ${newContract},
+  Field: ${newField},
+  Index: ${newIndex}`);
+          return;
+        }
+      }
+
+      var newRow = table.row.add([newContract, newField, newIndex, newRevNum, newValue, newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
+                      `<td>${rowButtons}</td>`,
+      ]).draw().node();
+    }    
+    $('#addNewModal').modal('hide');
+    calculationControlsAuth();
+  }
+  
+  function editEntry(button) {
+    var row = button.closest('tr');
+
+    var contract = row.cells[0].innerText;
+    var Field = row.cells[1].innerText;
+    var index = row.cells[2].innerText;
+    var revNum = row.cells[3].innerText;
+    var value = row.cells[4].innerText;
+    var periodFrom = row.cells[5].innerText;
+    var periodTo = row.cells[6].innerText;
+    var status = row.cells[7].innerText;
+    var remarks = row.cells[9].innerText; 
+
+    addNewModalShow();
+
+    document.getElementById("newContract").value = contract;
+    document.getElementById("newField").value = Field;    
+    optNewFieldChange();
+    document.getElementById("newIndex").value = index;
+    document.getElementById("newRevNum").value = revNum;
+    document.getElementById("newValue").value = value;
+    document.getElementById("newPeriodFrom").value = periodFrom;
+    document.getElementById("newPeriodTo").value = periodTo;
+    document.getElementById("newStatus").value = status;
+    document.getElementById("newRemarks").value = remarks;
+
+    document.getElementById("newContract").disabled = true;
+    document.getElementById("newField").disabled = true;
+    document.getElementById("newIndex").disabled = true;
+    if(status=='APPROVED'){  
+      document.getElementById("newRevNum").value = parseInt(revNum)+1;  
+      document.getElementById("newStatus").value = "";    
+    } else{   
+      document.getElementById("editRowIndex").value = table.row(row).index();
+    }
+  }
+
+  function removeEntry(button) {
+    var confirmation = confirm("Are you sure you want to remove this entry?");
+    if (confirmation) { 
+        var row = button.closest('tr');
+        alert(`Contract Field removed.`);
+        var rowIndex = table.row(row).index();
+        var newData = table.row(rowIndex).data();
+        newData[7] = 'REMOVED';
+        newData[8] = 'No';
+
+        table.row(rowIndex).data(newData).draw();
+        calculationControlsAuth();   
+    }
+  }
+  
+  function submitEntry(button){    
+    var remarks = prompt("Please provide remarks for submitting this entry:");
+    if (remarks !== null && remarks.trim() !== "") {      
+        var row = button.closest('tr');
+        alert(`Contract Field submitted for approval.`);
+        var rowIndex = table.row(row).index();
+        var newData = table.row(rowIndex).data();
+        newData[9] += '<div>Submit: ' + remarks + '</div>';
+        newData[7] = 'FOR APPROVAL';
+        table.row(rowIndex).data(newData).draw();
+        calculationControlsAuth();
+    } else {
+        alert("You must provide remarks for submitting this entry.");
+    }
+  }
+
+  function approveEntry(button) {
+    var confirmation = confirm("Are you sure you want to approve this entry?");
+    if (confirmation) { 
+        var row = button.closest('tr');
+        alert(`Contract Field approved.`);
+        var rowIndex = table.row(row).index();
+        var newData = table.row(rowIndex).data();
+
+        for (var i = 0; i < table.rows().count(); i++) {
+          var newCheckData = table.row(i).data();
+          if(newCheckData[0]==newData[0] && newCheckData[1]==newData[1] && newCheckData[2]==newData[2]) {   
+            newCheckData[8] = 'No';
+            table.row(i).data(newCheckData); 
+          }
+        } 
+
+        newData[7] = 'APPROVED';
+        newData[8] = 'Yes';
+
+        table.row(rowIndex).data(newData).draw();
+        calculationControlsAuth();   
+    }
+}
+      
+  function rejectEntry(button){    
+    var remarks = prompt("Please provide remarks for rejecting this entry:");
+    if (remarks !== null && remarks.trim() !== "") {      
+        var row = button.closest('tr');
+        alert(`Contract Field rejected.`);
+        var rowIndex = table.row(row).index();
+        var newData = table.row(rowIndex).data();
+        newData[9] += '<div>Reject: ' + remarks + '</div>';
+        newData[7] = 'REJECTED';
+        table.row(rowIndex).data(newData).draw();
+        calculationControlsAuth();
+    } else {
+        alert("You must provide remarks for submitting this entry.");
+    }
+  }
+  
+  function calculationControlsAuth(){
+    var user = getUser();
+    var trs = $('#dataTable tbody tr')
+    table.rows().every(function() {
+      var rowData = this.data();
+      var status = rowData[7];
+      var tdControls = this.node().children[12];
+      tdControls.children[0].style.display = (status=="NEW"||status=="RETURNED"||status=="APPROVED")&&user=="MKTG"?"block":"none";
+      tdControls.children[1].style.display = (status=="NEW"||status=="RETURNED")&&user=="MKTG"?"block":"none";
+      tdControls.children[2].style.display = (status=="NEW"||status=="RETURNED")&&user=="MKTG"?"block":"none";  
+      tdControls.children[3].style.display = status=="FOR APPROVAL"&&user=="MKTGMNGR"?"block":"none";
+      tdControls.children[4].style.display = status=="FOR APPROVAL"&&user=="MKTGMNGR"?"block":"none";
+    })
+    $('#addNewButton')[0].style.display = user=="MKTG"?"block":"none";
+    table.columns.adjust().draw();
+  }
+  
+  calculationControlsAuth();
+
+  function handleUserChange() {
+    calculationControlsAuth();
+  }
+
+  function applyContractFilter() {
+    var contractFilter = document.getElementById("contractFilter").value;
+    table.column(0).search(contractFilter).draw();
+  }
+
+  updateSelectOption($('#contractFilter'),dataContract,'All Contract'); 
+  updateSelectOption($('#newContract'),dataContract); 
+  updateSelectOption($('#newField'),dataFields);
+
+  function optNewFieldChange(){
+    updateSelectOption($('#newValue'),dataFieldDataFilter( $('#newField').val()));
+  }
+
+
+</script>
+
+
+</body>
+</html>

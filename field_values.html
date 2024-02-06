@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <title>Field Values</title>
+</head>
+<body>
+
+  <div class="container mt-4">
+  
+  
+  <h2>Field Values</h2>
+  <!--  Filter -->
+<div class="form-row mt-3">
+ <div class="form-group">
+   <select class="form-control" id="tableFilter" onchange="applyTableFilter()">
+     <option value="">All Table</option>
+     <option value="Region">Region</option>
+     <option value="Plant">Plant</option>
+     <option value="MTN">MTN</option>
+     <option value="SEIN">SEIN</option>
+     <option value="MarketBID">MarketBID</option>
+     <option value="DU">DU</option>
+   </select>
+ </div>
+</div>
+
+  <!-- Table -->
+  <table class="table table-bordered" id="dataTable">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Code</th>
+        <th>Text</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Region</td>
+        <td>LUZ</td>
+        <td>Luzon</td>
+        <td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>   
+    </tbody>
+  </table>
+
+  <!-- Add New Button -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal">
+    Add New
+  </button>
+</div>
+
+<!-- Add New Modal -->
+<div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit Entry</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Form for adding new entries -->
+        <form id="addEntryForm">
+          <input type="hidden" id="editRowIndex" value="">          
+          <div class="form-group">
+            <label for="newField">Field</label>
+            <select class="form-control" id="newField" required>
+              <option value="Region">Region</option>
+              <option value="Plant">Plant</option>
+              <option value="MTN">MTN</option>
+              <option value="SEIN">SEIN</option>
+              <option value="MarketBID">MarketBID</option>
+              <option value="DU">DU</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="newCode">Code</label>
+            <input type="text" class="form-control" id="newCode" required>
+          </div>
+          <div class="form-group">
+            <label for="newText">Text</label>
+            <input type="text" class="form-control" id="newText" required>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="navbar.js"></script>
+<script>
+  var table; // Declare table variable globally
+
+  $(document).ready(function() {
+    // DataTable initialization
+    table = $('#dataTable').DataTable({
+      paging: true, // Enable pagination
+      searching: true, // Enable search bar
+      columns: [
+        { title: 'Field' },
+        { title: 'Code' },
+        { title: 'Text' },
+        { title: '' } // This is for the "Edit" button column
+      ]
+    });
+
+    // Add New Entry button click event
+    $('#addNewModal').on('shown.bs.modal', function () {
+      // Clear form fields
+      document.getElementById("newField").value = "";
+      document.getElementById("newCode").value = "";
+      document.getElementById("newText").value = "";
+      // Enable Code field for new entry  
+      document.getElementById("newField").disabled = false;
+      document.getElementById("newCode").readOnly = false;    
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    });
+  });
+
+  function addNewEntry() {
+    // Get values from the form
+    var newField = document.getElementById("newField").value;
+    var newCode = document.getElementById("newCode").value;
+    var newText = document.getElementById("newText").value;
+
+    // Validate input
+    if (!newField || !newCode || !newText) {
+      alert("Please enter valid data.");
+      return;
+    }
+
+    // Check if editing an existing entry
+    var editing = document.getElementById("editRowIndex").value;
+    if (editing !== "") {
+      // Update existing row
+      var row = table.row(parseInt(editing)).node();
+      row.cells[0].innerText = newField;
+      row.cells[1].innerText = newCode;
+      row.cells[2].innerText = newText;
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    } else {
+      // Create a new table row
+      var newRow = table.row.add([newField, newCode, newText, '<button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button>']).draw().node();
+    }
+
+    // Clear form fields
+    document.getElementById("newField").value = "";
+    document.getElementById("newCode").value = "";
+    document.getElementById("newText").value = "";
+
+    // Close the modal
+    $('#addNewModal').modal('hide');
+  }
+
+  function editEntry(button) {
+  // Retrieve the DataTable instance
+    var table = $('#dataTable').DataTable();
+
+    // Retrieve the values from the selected row
+    var row = button.closest('tr');
+    var field = row.cells[0].innerText;
+    var code = row.cells[1].innerText;
+    var text = row.cells[2].innerText;
+
+
+    // Open the modal for editing
+    $('#addNewModal').modal('show');
+    // Set the values in the modal for editing
+    document.getElementById("newField").value = field;
+    document.getElementById("newCode").value = code;
+    document.getElementById("newText").value = text;
+
+    // Set the readonly attribute for Code field
+    document.getElementById("newField").disabled = true;
+    document.getElementById("newCode").readOnly = true;
+
+    // Set the index of the row being edited
+    document.getElementById("editRowIndex").value = table.row(row).index();
+  }
+
+  
+  function applyTableFilter() {
+      var filter = document.getElementById("tableFilter").value;
+      table.column(0).search(filter).draw();
+    }
+</script>
+
+</body>
+</html>

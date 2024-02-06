@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <title>Variable Units</title>
+</head>
+<body>
+
+  
+
+  <div class="container mt-4">
+  
+  
+  <h2>Variables</h2>
+  <!--  Filter -->
+<div class="form-row mt-3">
+ <div class="form-group">
+   <select class="form-control" id="tableFilter" onchange="applyTableFilter()">
+     <option value="">All Table</option>
+     <option value="TEXT">TEXT</option>
+     <option value="CHARGES">CHARGES</option>
+     <option value="CONTRACTS">CONTRACTS</option>
+     <option value="MINDICES">MINDICES</option>
+     <option value="MPLNTDATA">MPLNTDATA</option>
+     <option value="STLMNTMTN">STLMNTMTN</option>
+     <option value="STLMNTBID">STLMNTBID</option>
+     <option value="STLMNTSEIN">STLMNTSEIN</option>
+   </select>
+ </div>
+</div>
+
+  <!-- Table -->
+  <table class="table table-bordered" id="dataTable">
+    <thead>
+      <tr>
+        <th>Table</th>
+        <th>Code</th>
+        <th>Text</th>
+        <th>Units</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>TEXT</td>
+        <td>TXT_INDICES</td>
+        <td>Indices</td>
+        <td></td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>TEXT</td>
+        <td>TXT_PLANTDATA</td>
+        <td>Plant Data</td>
+        <td></td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>TEXT</td>
+        <td>TXT_QUANTITIES</td>
+        <td>Quantities</td>
+        <td></td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>TEXT</td>
+        <td>TXT_RATES</td>
+        <td>Rates</td>
+        <td></td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>TEXT</td>
+        <td>TXT_FIXEDCHARGE</td>
+        <td>Fixed Charge</td>
+        <td></td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>TEXT</td>
+        <td>TXT_GENERATIONCHARGE</td>
+        <td>Generation Charge</td>
+        <td></td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_MEOT</td>
+        <td>Minimum Offtake Energy</td>
+        <td>KWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_CRF</td>
+        <td>Capital Recovery Fee</td>
+        <td>PHPKW</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_FOM</td>
+        <td>Fixed O&M Fee</td>
+        <td>PHPKW</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_VOM</td>
+        <td>Variable O&M Fee</td>
+        <td>PHPKWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_ER194</td>
+        <td>ER-194</td>
+        <td>PHPKWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_NCRCPIB</td>
+        <td>NCR CPI Base</td>
+        <td>INDEX</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CONTRACTS</td>
+        <td>C_FOREXB</td>
+        <td>FOREX Base</td>
+        <td>USDPHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CALCVAR</td>
+        <td>V_EN</td>
+        <td>Energy Delivered</td>
+        <td>KWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CALCVAR</td>
+        <td>V_FUELR</td>
+        <td>Fuel Rate</td>
+        <td>PHPKWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>MINDICES</td>
+        <td>IX_NCRCPI</td>
+        <td>NCR CPI</td>
+        <td>INDEX</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>MINDICES</td>
+        <td>IX_FOREX</td>
+        <td>FOREX</td>
+        <td>USDPHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>MPLNTDATA</td>
+        <td>PL_DCP</td>
+        <td>Delivered Coal Price</td>
+        <td>PHPMT</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>MPLNTDATA</td>
+        <td>PL_COALMT</td>
+        <td>Coal Consumption</td>
+        <td>MT</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>MPLNTDATA</td>
+        <td>PL_GEN</td>
+        <td>Plant Generation</td>
+        <td>kWh</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CHARGES</td>
+        <td>CRF</td>
+        <td>Capital Recovery Fee</td>
+        <td>PHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CHARGES</td>
+        <td>FOM</td>
+        <td>Fixed O&M Fee</td>
+        <td>PHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CHARGES</td>
+        <td>VOM</td>
+        <td>Variable O&M Fee</td>
+        <td>PHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CHARGES</td>
+        <td>ER194</td>
+        <td>ER-194</td>
+        <td>PHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>CHARGES</td>
+        <td>FUEL</td>
+        <td>Fuel Charge</td>
+        <td>PHP</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>STLMNTMTN</td>
+        <td>STL_PRICE</td>
+        <td>Settlement Data Price</td>
+        <td>PHP/KWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>STLMNTBID</td>
+        <td>STL_BCQ</td>
+        <td>Settlement Data BCQ</td>
+        <td>KWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+      <tr>
+        <td>STLMNTSEIN</td>
+        <td>STL_MQ</td>
+        <td>Settlement Data Metered Quantity</td>
+        <td>KWH</td>
+        <td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Add New Button -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal">
+    Add New
+  </button>
+</div>
+
+<!-- Add New Modal -->
+<div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit Entry</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addEntryForm">
+          <input type="hidden" id="editRowIndex" value="">          
+          <div class="form-group">
+            <label for="newTable">Table</label>
+            <select class="form-control" id="newTable" required>
+              <option value="LABELS">LABELS</option>
+              <option value="CHARGES">CHARGES</option>
+              <option value="CONTRACTS">CONTRACTS</option>
+              <option value="MINDICES">MINDICES</option>
+              <option value="MPLNTDATA">MPLNTDATA</option>
+              <option value="STLMNTMTN">STLMNTMTN</option>
+              <option value="STLMNTBID">STLMNTBID</option>
+              <option value="STLMNTSEIN">STLMNTSEIN</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="newCode">Code</label>
+            <input type="text" class="form-control" id="newCode" required>
+          </div>
+          <div class="form-group">
+            <label for="newName">Text</label>
+            <input type="text" class="form-control" id="newName" required>
+          </div>
+          <div class="form-group">
+            <label for="newDescription">Description</label>
+            <input type="text" class="form-control" id="newDescription" required>
+          </div>
+          <div class="form-group">
+            <label for="newUnits">Units</label>
+            <select class="form-control" id="newUnits" required>
+              <option value="PHP">PHP</option>
+              <option value="KWH">KWH</option>
+              <option value="MW">MW</option>
+              <option value="USD">USD</option>
+              <option value="PCT">PCT</option>
+              <option value="INDEX">INDEX</option>
+              <option value="USDPHP">USDPHP</option>
+              <option value="MT">MT</option>
+              <option value="PHPMT">PHPMT</option>
+              <option value="PHPKWH">PHPKWH</option>
+              <option value="PHPKW">PHPKW</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="navbar.js"></script>
+<script>
+  var table; // Declare table variable globally
+
+  $(document).ready(function() {
+    // DataTable initialization
+    table = $('#dataTable').DataTable({
+      paging: true, // Enable pagination
+      searching: true, // Enable search bar
+      columns: [
+        { title: 'Table' },
+        { title: 'Code' },
+        { title: 'Text' },
+        { title: 'Units' },
+        { title: 'Description' },
+        { title: '' } // This is for the "Edit" button column
+      ]
+    });
+
+    // Add New Entry button click event
+    $('#addNewModal').on('shown.bs.modal', function () {
+      // Clear form fields
+      document.getElementById("newCode").value = "";
+      document.getElementById("newName").value = "";
+      document.getElementById("newDescription").value = "";
+      document.getElementById("newTable").value = "";
+      document.getElementById("newUnits").value = "";
+      // Enable Code field for new entry
+      document.getElementById("newCode").readOnly = false;      
+      document.getElementById("newTable").disabled = false;
+      document.getElementById("newUnits").disabled = false;
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    });
+  });
+
+  function addNewEntry() {
+    // Get values from the form
+    var newCode = document.getElementById("newCode").value;
+    var newName = document.getElementById("newName").value;
+    var newDescription = document.getElementById("newDescription").value;
+    var newTable = document.getElementById("newTable").value;
+    var newUnits = document.getElementById("newUnits").value;
+
+    // Validate input
+    if (!newCode || !newName || !newTable || !newUnits) {
+      alert("Please enter valid data.");
+      return;
+    }
+
+    // Check if editing an existing entry
+    var editing = document.getElementById("editRowIndex").value;
+    if (editing !== "") {
+      // Update existing row
+      var row = table.row(parseInt(editing)).node();
+      row.cells[0].innerText = newTable;
+      row.cells[1].innerText = newCode;
+      row.cells[2].innerText = newName;
+      row.cells[3].innerText = newUnits;
+      row.cells[4].innerText = newDescription;
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    } else {
+      // Create a new table row
+      var newRow = table.row.add([newTable, newCode, newName, newUnits, newDescription, '<button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button>']).draw().node();
+    }
+
+    // Clear form fields
+    document.getElementById("newCode").value = "";
+    document.getElementById("newName").value = "";
+    document.getElementById("newDescription").value = "";
+    document.getElementById("newTable").value = "";
+    document.getElementById("newUnits").value = "";
+
+    // Close the modal
+    $('#addNewModal').modal('hide');
+  }
+
+  function editEntry(button) {
+  // Retrieve the DataTable instance
+    var table = $('#dataTable').DataTable();
+
+    // Retrieve the values from the selected row
+    var row = button.closest('tr');
+    var code = row.cells[1].innerText;
+    var name = row.cells[2].innerText;
+    var description = row.cells[4].innerText;
+    var tableValue = row.cells[0].innerText;
+    var units = row.cells[3].innerText;
+
+
+    // Open the modal for editing
+    $('#addNewModal').modal('show');
+    // Set the values in the modal for editing
+    document.getElementById("newCode").value = code;
+    document.getElementById("newName").value = name;
+    document.getElementById("newDescription").value = description;
+    document.getElementById("newTable").value = tableValue;
+    document.getElementById("newUnits").value = units;
+
+    // Set the readonly attribute for Code field
+    document.getElementById("newCode").readOnly = true;
+    document.getElementById("newTable").disabled = true;
+    document.getElementById("newUnits").disabled = true;
+
+    // Set the index of the row being edited
+    document.getElementById("editRowIndex").value = table.row(row).index();
+  }
+
+  
+  function applyTableFilter() {
+      var filter = document.getElementById("tableFilter").value;
+      table.column(0).search(filter).draw();
+    }
+</script>
+
+</body>
+</html>

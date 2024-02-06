@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <title>Finance Accounts</title>
+</head>
+<body>
+
+<div class="container mt-4">
+  
+  
+  <h2>Finance Accounts</h2>
+  <!--  Filter -->
+
+  <!-- Table -->
+  <table class="table table-bordered" id="dataTable">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Text</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>CRFR</td><td>CRF Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>CRFE</td><td>CRF Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>FOMR</td><td>FOM Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>FOME</td><td>FOM Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>VOMR</td><td>VOM Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>VOME</td><td>VOM Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>ER194R</td><td>ER194 Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>ER194E</td><td>ER194 Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>FUELR</td><td>FUEL Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>FUELE</td><td>FUEL Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>VATR</td><td>VAT Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>VATE</td><td>VAT Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>   
+      <tr><td>RESSUPR</td><td>RES Supplier Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>RESSUPE</td><td>RES Supplier Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>RESVATR</td><td>RES VAT Revenue</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>
+      <tr><td>RESVATE</td><td>RES VAT Expense</td><td></td><td><button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button></td></tr>   
+    </tbody>
+  </table>
+
+  <!-- Add New Button -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal">
+    Add New
+  </button>
+</div>
+
+<!-- Add New Modal -->
+<div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit Entry</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Form for adding new entries -->
+        <form id="addEntryForm">
+          <input type="hidden" id="editRowIndex" value="">              
+          <div class="form-group">
+            <label for="newCode">Code</label>
+            <input type="text" class="form-control" id="newCode" required>
+          </div>
+          <div class="form-group">
+            <label for="newText">Text</label>
+            <input type="text" class="form-control" id="newText" required>
+          </div>
+          <div class="form-group">
+            <label for="newDescription">Description</label>
+            <input type="text" class="form-control" id="newDescription" required>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="navbar.js"></script>
+<script>
+  var table; // Declare table variable globally
+
+  $(document).ready(function() {
+    // DataTable initialization
+    table = $('#dataTable').DataTable({
+      paging: true, // Enable pagination
+      searching: true, // Enable search bar
+      columns: [
+        { title: 'Code' },
+        { title: 'Text' },
+        { title: 'Text' },
+        { title: '' } // This is for the "Edit" button column
+      ]
+    });
+
+    // Add New Entry button click event
+    $('#addNewModal').on('shown.bs.modal', function () {
+      // Clear form fields
+      document.getElementById("newCode").value = "";
+      document.getElementById("newText").value = "";
+      document.getElementById("newText").value = "";
+      // Enable Code field for new entry
+      document.getElementById("newCode").readOnly = false;      
+      document.getElementById("newText").disabled = false;
+      document.getElementById("newText").disabled = false;
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    });
+  });
+
+  function addNewEntry() {
+    // Get values from the form
+    var newCode = document.getElementById("newCode").value;
+    var newText = document.getElementById("newText").value;
+    var newText = document.getElementById("newText").value;
+
+    // Validate input
+    if (!newCode || !newText || !newText) {
+      alert("Please enter valid data.");
+      return;
+    }
+
+    // Check if editing an existing entry
+    var editing = document.getElementById("editRowIndex").value;
+    if (editing !== "") {
+      // Update existing row
+      var row = table.row(parseInt(editing)).node();
+      row.cells[0].innerText = newCode;
+      row.cells[1].innerText = newText;
+      row.cells[2].innerText = newText;
+
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    } else {
+      // Create a new table row
+      var newRow = table.row.add([newCode, newText, newText, '<button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button>']).draw().node();
+    }
+
+    // Clear form fields
+    document.getElementById("newCode").value = "";
+    document.getElementById("newText").value = "";
+    document.getElementById("newText").value = "";
+
+    // Close the modal
+    $('#addNewModal').modal('hide');
+  }
+
+  function editEntry(button) {
+  // Retrieve the DataTable instance
+    var table = $('#dataTable').DataTable();
+    // Retrieve the values from the selected row
+    var row = button.closest('tr');
+    var Code = row.cells[0].innerText;
+    var Text = row.cells[1].innerText;
+    var Description = row.cells[2].innerText;
+
+
+    // Open the modal for editing
+    $('#addNewModal').modal('show');
+    // Set the values in the modal for editing
+    document.getElementById("newCode").value = Code;
+    document.getElementById("newText").value = Text;
+    document.getElementById("newText").value = Description;
+
+    // Set the readonly attribute for Code field
+    document.getElementById("newCode").disabled = true;
+
+    // Set the index of the row being edited
+    document.getElementById("editRowIndex").value = table.row(row).index();
+  }
+
+</script>
+
+</body>
+</html>

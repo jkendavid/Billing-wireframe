@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css">
+
+  <title>Monthly Indices</title>
+</head>
+<body>
+
+  
+  <div class="container mt-4">
+
+  <h2>Monthly Indices</h2>
+
+     <!-- Contract Filter -->
+  <div class="form-row mt-3">
+    <div class="form-group">
+      <select class="form-control" id="templateFilter" onchange="applyTemplateFilter()">
+        <option value="">All Period</option>
+        <option value="2024-01">2024-01</option>
+        <option value="2023-12">2023-12</option>
+        <option value="2023-11">2023-11</option>
+        <option value="2023-10">2023-10</option>
+      </select>
+    </div>
+  </div>
+  <!-- Table -->
+  <table class="table table-bordered" id="dataTable">
+    <thead>
+      <tr>
+        <th>Period</th>
+        <th>Variable</th>
+        <th>Value</th>
+        <th>Rev Num</th>
+        <th>Prev Rec</th>
+        <th>Status</th>
+        <th>Active</th>
+        <th>Remarks</th>
+        <th>Created By</th>
+        <th>Created Time</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>   
+        <tr><td>2024-01</td><td>NCRCPI</td><td>3.7</td><td>0</td><td></td><td>New</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2024-01</td><td>FOREX</td><td>56.3</td><td>0</td><td></td><td>New</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2023-12</td><td>NCRCPI</td><td>3.5</td><td>0</td><td></td><td>Approved</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2023-12</td><td>FOREX</td><td>56.8</td><td>0</td><td></td><td>Approved</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2023-11</td><td>NCRCPI</td><td>4.2</td><td>0</td><td></td><td>Approved</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2023-11</td><td>FOREX</td><td>53.3</td><td>0</td><td></td><td>Approved</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2023-10</td><td>NCRCPI</td><td>7.6</td><td>0</td><td></td><td>Approved</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+        <tr><td>2023-10</td><td>FOREX</td><td>54.1</td><td>0</td><td></td><td>Approved</td><td>No</td><td></td><td>MRKTG</td><td>2023-01-01  02:00</td><td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Add New Button -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal" id="addNewButton">
+    Add New
+  </button>
+</div>
+
+<!-- Add New Modal -->
+<!-- Add New Modal -->
+<div class="modal" id="addNewModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit Entry</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Form for adding new entries -->
+        <form id="addEntryForm">
+          <input type="hidden" id="editRowIndex" value="">    
+          <input type="hidden" id="newRevNum" value="0">     
+          <input type="hidden" id="newPrev" value="">    
+          
+          <div class="form-group">
+            <label for="newPeriod">Period*</label>
+            <input type="month" class="form-control" id="newPeriod" required>
+          </div>
+          <div class="form-group">
+            <label for="newVariable">Variable*</label>
+            <select class="form-control" id="newVariable" required>
+              <option value="NCRCPI">NCRCPI</option>
+              <option value="FOREX">FOREX</option>
+            </select>
+          </div>               
+          <div class="form-group">
+            <label for="newValue">Value*</label>
+            <input type="number" class="form-control" id="newValue" required step="0.1">
+          </div>  
+          <div class="form-group">
+            <label for="newRemarks">Remarks</label>
+            <input type="text" class="form-control" id="newRemarks">
+          </div>
+          <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="navbar.js"></script>
+<script>
+    var table; // Declare table variable globally
+    // DataTable initialization    
+    table = $('#dataTable').DataTable({
+      paging: true, // Enable pagination
+      searching: true, // Enable search bar
+      columns: [
+        { title: 'Period' },
+        { title: 'Variable' },
+        { title: 'Value' },
+        { title: 'Rev No.' },
+        { title: 'Prev Rec' },
+        { title: 'Status' },
+        { title: 'Active' },
+        { title: 'Remarks' },
+        { title: 'Created By' },
+        { title: 'Created Time' },
+        { title: '' }, // This is for the "Edit" button column
+      ]
+    });   
+
+    
+    // Add New Entry button click event
+    $('#addNewModal').on('shown.bs.modal', function () {
+      // Clear form fields
+      document.getElementById("newVariable").value = "";
+      document.getElementById("newValue").value = "";
+      document.getElementById("newRemarks").value = "";
+
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+      document.getElementById("newRevNum").value = 0;
+      document.getElementById("newPrev").value = 0;
+
+      document.getElementById("newPeriod").disabled = false;
+      document.getElementById("newVariable").disabled = false;
+    });
+
+  function addNewEntry() {
+    // Get values from the form
+    var newPeriod = document.getElementById("newPeriod").value;
+    var newVariable = document.getElementById("newVariable").value;
+    var newValue = document.getElementById("newValue").value;
+    var newRemarks = document.getElementById("newRemarks").value;
+
+    var newRevNum = document.getElementById("newRevNum").value;
+    var newPrev = document.getElementById("newPrev").value;
+
+    var newStatus = 'New';
+    var newActive = 'No';
+    var newCreatedBy = document.getElementById("user").value;
+    var newCreatedTime = '2023-01-01 12:10';
+
+    // Validate input
+    if (!newPeriod || !newVariable || !newValue) {
+      alert("Please enter valid data.");
+      return;
+    }
+
+    // Check if editing an existing entry
+    var editing = document.getElementById("editRowIndex").value;
+    if (editing !== "") {
+      // Update existing row
+      var row = table.row(parseInt(editing)).node();
+      row.cells[0].innerText = newPeriod;
+      row.cells[1].innerText = newVariable;
+      row.cells[2].innerText = newValue;
+      row.cells[3].innerText = newRevNum;
+      row.cells[4].innerText = newPrev;
+      row.cells[5].innerText = newStatus;
+      row.cells[6].innerText = newActive; // Updated to include Remarks
+      row.cells[7].innerText = newRemarks;
+      row.cells[8].innerText = newCreatedBy;
+      row.cells[9].innerText = newCreatedTime;
+      // Reset edit flag
+      document.getElementById("editRowIndex").value = "";
+    } else {
+      // Create a new table row
+      var newRow = table.row.add([newPeriod, newVariable, newValue, newRevNum, newPrev, newStatus, newActive, newRemarks, newCreatedBy, newCreatedTime,
+    '<td><button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button><button class="btn btn-info btn-sm approveButton" onclick="approveEntry(this)">Approve</button><button class="btn btn-danger btn-sm rejectButton" onclick="rejectEntry(this)">Reject</button></td>',
+    
+    ]).draw().node();
+    }
+
+    
+    // Clear form fields
+    document.getElementById("newVariable").value = "";
+    document.getElementById("newValue").value = 0;
+    document.getElementById("newRemarks").value = "";
+
+    // Reset edit flag
+    document.getElementById("editRowIndex").value = "";
+    document.getElementById("newRevNum").value = 0;
+    document.getElementById("newPrev").value = 0;
+
+    document.getElementById("newPeriod").disabled = false;
+    document.getElementById("newVariable").disabled = false;
+    
+    $('#addNewModal').modal('hide');
+    handleUserChange();
+  }
+
+  function editEntry(button) {
+    // Retrieve the DataTable instance
+    var table = $('#dataTable').DataTable();
+
+    // Retrieve the values from the selected row
+    var row = button.closest('tr');
+
+    var period = row.cells[0].innerText;
+    var variable = row.cells[1].innerText;
+    var value = row.cells[2].innerText;
+    var revNum = row.cells[3].innerText;
+    var prev = row.cells[4].innerText; 
+    var status = row.cells[5].innerText;
+    var remarks = row.cells[7].innerText; 
+
+    // Open the modal for editing
+    $('#addNewModal').modal('show');
+    // Set the values in the modal for editing
+    document.getElementById("newPeriod").value = period;
+    document.getElementById("newVariable").value = variable;
+    document.getElementById("newValue").value = value;
+    document.getElementById("newRevNum").value = revNum;
+    document.getElementById("newPrev").value = prev;
+    document.getElementById("newRemarks").value = remarks;
+
+    // Set the readonly attribute for certain fields
+    document.getElementById("newPeriod").disabled = true;
+    document.getElementById("newVariable").disabled = true;
+
+    if(status=='Approved'){
+      document.getElementById("newPrev").value =table.row(row).index();      
+      document.getElementById("newRevNum").value = parseInt(revNum)+1;      
+    } else{   
+      document.getElementById("editRowIndex").value = table.row(row).index();
+    }
+  }
+
+  function approveEntry(button) {
+    // Display a confirmation dialog
+    var confirmation = confirm("Are you sure you want to approve this entry?");
+    
+    // If the user clicks "OK" (true), proceed with approval
+    if (confirmation) {
+        // Retrieve the values from the selected row
+        var row = $(button).closest('tr');
+        row.find('td:eq(5)').text('Approved');
+        row.find('td:eq(6)').text('Yes');
+
+        var prev = parseInt(row.find('td:eq(4)').text());
+        if (!isNaN(prev) && prev >= 0) {
+          row.prev().find('td:eq(6)').text('No');
+        }
+    }
+    handleUserChange();
+}
+
+function rejectEntry(button) {
+    // Prompt the user for remarks
+    var remarks = prompt("Please provide remarks for rejecting this entry:");
+
+    // Check if the user clicked "OK" and provided remarks
+    if (remarks !== null && remarks.trim() !== "") {
+        // Update the remarks cell in the row
+        var row = button.closest('tr');
+        row.cells[7].innerText += ' Reject remarks: ' + remarks;
+        row.cells[5].innerText = 'Decline';
+
+        // Handle any additional logic or updates as needed
+        handleUserChange();
+    } else {
+        // If the user clicked "Cancel" or did not provide remarks
+        alert("You must provide remarks for rejecting this entry.");
+    }
+}
+
+
+  function handleUserChange() {
+        var userType = document.getElementById("user").value;
+        var addButton = document.getElementById("addNewButton");
+        var editButton = document.getElementsByClassName("editButton");
+        var approveButton = document.getElementsByClassName("approveButton");
+        var declineButton = document.getElementsByClassName("rejectButton");
+        // Hide or show buttons based on user type
+        if (userType === "MKTG") {
+            addButton.style.display = "block"; // Show "Add New" button
+            for (var i = 0; i < editButton.length; i++) {
+                editButton[i].style.display = "block"; // Show "Edit" buttons
+                approveButton[i].style.display = "none"; 
+                declineButton[i].style.display = "none"; 
+            }
+        } else if (userType === "MKTGMNGR") {
+            addButton.style.display = "none"; // Hide "Add New" button
+            for (var i = 0; i < editButton.length; i++) {
+                editButton[i].style.display = "none"; // Hide "Edit" buttons
+
+                if( editButton[i].closest('tr').cells[5].innerText=='New') {
+                    approveButton[i].style.display = "block"; 
+                    declineButton[i].style.display = "block"; 
+                }else{
+                  approveButton[i].style.display = "none"; 
+                  declineButton[i].style.display = "none"; 
+                }
+            }
+        }
+    }
+    handleUserChange();
+
+
+    $('#dataTable').on('draw.dt', function () {
+      handleUserChange();
+    });
+
+    function applyTemplateFilter() {
+      var contractFilter = document.getElementById("templateFilter").value;
+      table.column(0).search(contractFilter).draw();
+    }
+</script>
+</body>
+</html>
