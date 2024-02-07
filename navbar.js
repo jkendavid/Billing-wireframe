@@ -33,7 +33,8 @@ $('body').prepend(
                 Configuration
             </a>
             <div class="dropdown-menu" aria-labelledby="servicesDropdown">
-                <a class="dropdown-item" href="variables.html">Variables</a>
+                <a class="dropdown-item" href="variables.html">Variable List</a>
+                <a class="dropdown-item" href="variable_tables.html">Variable Group List</a>
                 <a class="dropdown-item" href="field_values.html">Fields Data</a>
                 <a class="dropdown-item" href="finance_accounts.html">Finance Accounts</a>
                 <a class="dropdown-item" href="finance_account_link.html">Finance Accounts Link</a>
@@ -210,4 +211,14 @@ function updateSelectOption(opt,data,all='',classindex = null){
         }));
     });
     opt.val(value);
+}
+
+
+function splitTodiv(text){
+    var parts = text.split('|');
+    var arr = []
+    for (var i = 0; i < parts.length; i++) {
+      arr.push('<div>' + parts[i] + '</div>');
+    }
+    return arr.join('');
 }

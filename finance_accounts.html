@@ -42,9 +42,6 @@
   
 
   <div class="form-row my-2">
-    <div class="form-group">
-      <select class="form-control" id="tableFilter" onchange="applyFilter()"></select>
-    </div>
     <div class="mx-auto"></div>        
     <div>
       <button type="button" class="btn btn-primary" id="addNewButton" onclick="addNewModalShow()">Add New</button>
@@ -267,16 +264,7 @@
   function handleUserChange() {
     calculationControlsAuth();
   }
-  
-  updateSelectOption($('#newField'),dataFields); 
 
-
-  updateSelectOption($('#tableFilter'),dataFields,'All Fields'); 
-
-  function applyFilter() {
-    var tableFilter= document.getElementById("tableFilter").value;
-    table.column(0).search(tableFilter).draw();
-  }
 
 
 </script>

@@ -424,10 +424,24 @@ function loadData(){
 
   updateSelectOption($('#contractFilter'),dataContract,'All Contract'); 
   updateSelectOption($('#newContract'),dataContract); 
-  updateSelectOption($('#newField'),dataFields);
+
+  function dataFields(){
+    var arr = []
+    $.each(dataVariables, function(index, row) {
+        if(row[0]== '**FIELDS' && row[6]=='Yes'&& row[7]=='Yes')arr.push([row[1]]);
+    });
+    return arr;
+  }
+
+  updateSelectOption($('#newField'),dataFields());
 
   function optNewFieldChange(){
-    updateSelectOption($('#newValue'),dataFieldDataFilter( $('#newField').val()));
+    var field =  $('#newField').val();
+    var arr = []
+    $.each(dataFieldData, function(index, row) {
+        if(row[0]== field)arr.push([row[1]]);
+    });
+    updateSelectOption($('#newValue'),arr);
   }
 
 

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <title>Variable List</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+  <title>Variable Table List</title>
   <style>   
 
     td .btn-sm{
@@ -38,13 +39,10 @@
   
   <div class="container mt-4">
 
-  <h2>Variable List</h2>
+  <h2>Variable Table List</h2>
   
 
   <div class="form-row my-2">
-    <div class="form-group">
-      <select class="form-control" id="tableFilter" onchange="applyFilter()"></select>
-    </div>
     <div class="mx-auto"></div>        
     <div>
       <button type="button" class="btn btn-primary" id="addNewButton" onclick="addNewModalShow()">Add New</button>
@@ -54,14 +52,12 @@
   <table class="table table-bordered" id="dataTable">
     <thead>
       <tr>
-        <th>Table</th>
         <th>Code</th>
-        <th>Text</th>
-        <th>Unit</th>
-        <th>Rounding Rule</th>
         <th>Description</th>
+        <th>View</th>
+        <th>Fields</th>
+        <th>Internal</th>
         <th>Editable</th>
-        <th>Active</th>
         <th>Created By</th>
         <th>Created Time</th>
         <th></th>
@@ -83,33 +79,30 @@
         <div class="modal-body">
           <form id="addEntryForm">
             <input type="hidden" id="editRowIndex" value=""> 
-            <input type="hidden" id="newActive" value=""> 
-            <div class="form-group">
-              <label for="newTable">Table*</label>
-              <select class="form-control" id="newTable" required>
-              </select>
-            </div>    
             <div class="form-group">
               <label for="newCode">Code*</label>
               <input type="text" class="form-control" id="newCode">
             </div>  
             <div class="form-group">
-              <label for="newText">Text*</label>
-              <input type="text" class="form-control" id="newText">
-            </div>
-            <div class="form-group">
-              <label for="newUnit">Unit</label>
-              <input type="text" class="form-control" id="newUnit">
-            </div>
-            <div class="form-group">
-              <label for="newRounding">Rounding Rule</label>
-              <select class="form-control" id="newRounding" required>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="newDescription">Description</label>
+              <label for="newDescription">Description*</label>
               <input type="text" class="form-control" id="newDescription">
-            </div>
+            </div>  
+            <div class="form-group">
+              <label for="newView">View</label>
+              <input type="text" class="form-control" id="newView">
+            </div>              
+            <div class="form-group">
+              <label for="newFields">Fields*</label>
+              <select class="form-control" id="newFields" required  multiple="multiple">
+              </select>
+            </div>           
+            <div class="form-group">
+              <label for="newInternal">Internal*</label>
+              <select class="form-control" id="newInternal" required>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div> 
             <button type="button" class="btn btn-primary" onclick="addNewEntry()">Save</button>
           </form>
         </div>
@@ -124,19 +117,19 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
 <script src="navbar.js"></script>
 <script src="data.js"></script>
 
 <script>
 
-  var rowButtons = `<button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button>
-                    <button class="btn btn-info btn-sm editButton" onclick="activateEntry(this)">Activate</button>
-                    <button class="btn btn-danger btn-sm removeButton" onclick="deactivateEntry(this)">Deactivate</button>`
+  var rowButtons = `<button class="btn btn-info btn-sm editButton" onclick="editEntry(this)">Edit</button>`
 
   function loadData(){
     var data = []
-    $.each(dataVariables, function(index, row) {
+    $.each(dataVariableTables, function(index, row) {
+      row[3] = splitTodiv(row[3])
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
@@ -181,20 +174,16 @@
 
 
   function addNewEntry() {
-    var newTable = document.getElementById("newTable").value;
     var newCode = document.getElementById("newCode").value;
-    var newText = document.getElementById("newText").value;
-    var newUnit = document.getElementById("newUnit").value;
-    var newRounding = document.getElementById("newRounding").value;
     var newDescription = document.getElementById("newDescription").value;
-    var newCustom = 'Yes';
-    var newActive = document.getElementById("newActive").value;
-    if(newActive=='')newActive='Yes';
-
+    var newView = document.getElementById("newView").value;
+    var newFields = document.getElementById("newFields").value;
+    var newInternal = document.getElementById("newInternal").value;
+    var newEditable = "Yes";
     var newCreatedBy = getUser();
     var newCreatedTime = getCurrentTime();
 
-    if (!newTable || !newCode || !newText) {
+    if (!newCode || !newDescription  || !newView|| !newFields || !newInternal) {
       alert("Please enter valid data.");
       return;
     }
@@ -203,28 +192,26 @@
     if (editing !== "") {      
       var rowIndex = parseInt(editing);
       var newData = table.row(rowIndex).data();
-      newData[0] = newTable;
-      newData[1] = newCode;
-      newData[2] = newText;
-      newData[3] = newUnit;
-      newData[4] = newRounding;
-      newData[5] = newDescription;
-      newData[6] = newCustom;
-      newData[7] = newActive;
-      newData[8] = newCreatedBy;
-      newData[9] = newCreatedTime;
+      newData[0] = newCode;
+      newData[1] = newDescription;
+      newData[2] = newView;
+      newData[3] = newFields;
+      newData[4] = newInternal;
+      newData[5] = newEditable;
+      newData[6] = newCreatedBy;
+      newData[7] = newCreatedTime;
       table.row(rowIndex).data(newData).draw();
     } else {
       for (var i = 0; i < table.rows().count(); i++) {
         var rows = table.rows().data()[i]
-        if(rows[1]==newCode) {
+        if(rows[0]==newCode) {
           alert(`The following record is already exist.                  
   Code: ${newCode}`);
           return;
         }
       }
 
-      var newRow = table.row.add([newTable,newCode, newText, newUnit, newRounding, newDescription,newCustom, newActive, newCreatedBy, newCreatedTime, 
+      var newRow = table.row.add([newCode, newDescription, newView, newFields, newInternal, newEditable, newCreatedBy, newCreatedTime, 
                       `<td>${rowButtons}</td>`,
       ]).draw().node();
     }    
@@ -235,67 +222,33 @@
   function editEntry(button) {
     var row = button.closest('tr');
 
-    var vartable = row.cells[0].innerText;
-    var code = row.cells[1].innerText;
-    var text = row.cells[2].innerText;
-    var unit = row.cells[3].innerText;
-    var rounding = row.cells[4].innerText;
-    var description = row.cells[5].innerText;
-    var active = row.cells[7].innerText;
+    var code = row.cells[0].innerText;
+    var description= row.cells[1].innerText;
+    var view = row.cells[2].innerText;
+    var fields = row.cells[3].innerText.split('\n');;
+    var internal = row.cells[4].innerText;
 
     addNewModalShow();
 
-    document.getElementById("newTable").value = vartable;
     document.getElementById("newCode").value = code;
-    document.getElementById("newText").value = text;
-    document.getElementById("newUnit").value = unit;
-    document.getElementById("newRounding").value = rounding;
     document.getElementById("newDescription").value = description;
-    document.getElementById("newActive").value = active;
+    document.getElementById("newView").value = view
+    $("#newFields").val(fields).trigger('change');
+    document.getElementById("newInternal").value = internal;
 
-    document.getElementById("newTable").disabled = true;
     document.getElementById("newCode").disabled = true;
 
     document.getElementById("editRowIndex").value = table.row(row).index();
   }
 
-  
-  function activateEntry(button){
-    var confirmation = confirm("Are you sure you want to activate this entry?");
-    if (confirmation) { 
-        var row = button.closest('tr');
-        alert(`Variable Activated.`);
-        var rowIndex = table.row(row).index();
-        var newData = table.row(rowIndex).data();
-        newData[7] = 'Yes';
-        table.row(rowIndex).data(newData).draw();
-        calculationControlsAuth();   
-    }
-  }
-
-  function deactivateEntry(button){
-    var confirmation = confirm("Are you sure you want to de-activate this entry?");
-    if (confirmation) { 
-        var row = button.closest('tr');
-        alert(`Variable De-activated.`);
-        var rowIndex = table.row(row).index();
-        var newData = table.row(rowIndex).data();
-        newData[7] = 'No';
-        table.row(rowIndex).data(newData).draw();
-        calculationControlsAuth();   
-    }
-  }
 
   function calculationControlsAuth(){
     var user = getUser(); 
     table.rows().every(function() {
       var rowData = this.data();
-      var custom = rowData[6];
-      var active = rowData[7];
-      var tdControls = this.node().children[10];
-      tdControls.children[0].style.display = custom=="Yes"&&active=="Yes"&&user=="MKTG"?"block":"none";
-      tdControls.children[1].style.display = custom=="Yes"&&active=="No"&&user=="MKTG"?"block":"none";
-      tdControls.children[2].style.display = custom=="Yes"&&active=="Yes"&&user=="MKTG"?"block":"none";
+      var editable = rowData[5];
+      var tdControls = this.node().children[8];
+      tdControls.children[0].style.display = editable=="Yes"?"block":"none";
     })
     table.columns.adjust().draw();
   }
@@ -304,16 +257,20 @@
     calculationControlsAuth();
   }
   
-  updateSelectOption($('#newTable'),dataVariableTables); 
-  updateSelectOption($('#newRounding'),dataRoundingRule); 
-
-
-  updateSelectOption($('#tableFilter'),dataVariableTables,'All Table'); 
-
-  function applyFilter() {
-    var tableFilter= document.getElementById("tableFilter").value;
-    table.column(0).search(tableFilter).draw();
+  function dataFields(){
+    var arr = []
+    $.each(dataVariables, function(index, row) {
+        if(row[0]== '**FIELDS' && row[7]=='Yes')arr.push([row[1]]);
+    });
+    return arr;
   }
+
+  updateSelectOption($('#newFields'),dataFields());
+
+
+  $('#newFields').select2({
+    width: '100%'
+  });
 
 
 </script>

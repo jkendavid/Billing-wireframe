@@ -261,11 +261,20 @@
   function handleUserChange() {
     calculationControlsAuth();
   }
-  
-  updateSelectOption($('#newField'),dataFields); 
 
 
-  updateSelectOption($('#tableFilter'),dataFields,'All Fields'); 
+  function dataFields(){
+    var arr = []
+    $.each(dataVariables, function(index, row) {
+        if(row[0]== '**FIELDS' && row[6]=='Yes'&& row[7]=='Yes')arr.push([row[1]]);
+    });
+    return arr;
+  }
+
+  updateSelectOption($('#newField'),dataFields()); 
+
+
+  updateSelectOption($('#tableFilter'),dataFields() ,'All Fields'); 
 
   function applyFilter() {
     var tableFilter= document.getElementById("tableFilter").value;
