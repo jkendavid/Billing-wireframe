@@ -12,7 +12,7 @@ $('body').prepend(
                   Contract
               </a>
               <div class="dropdown-menu" aria-labelledby="servicesDropdown">
-              <a class="dropdown-item" href="contracts.html">Contract List</a>
+              <a class="dropdown-item" href="contracts.html">Contracts</a>
                   <a class="dropdown-item" href="parties.html">Parties</a>
                   <a class="dropdown-item" href="contract_variables.html">Contract Variables</a>
                   <a class="dropdown-item" href="contract_fields.html">Contract Fields</a>
@@ -33,8 +33,8 @@ $('body').prepend(
                 Configuration
             </a>
             <div class="dropdown-menu" aria-labelledby="servicesDropdown">
-                <a class="dropdown-item" href="variables.html">Variable List</a>
-                <a class="dropdown-item" href="variable_tables.html">Variable Group List</a>
+                <a class="dropdown-item" href="variables.html">Variables</a>
+                <a class="dropdown-item" href="variable_tables.html">Variable Tables</a>
                 <a class="dropdown-item" href="field_values.html">Fields Data</a>
                 <a class="dropdown-item" href="finance_accounts.html">Finance Accounts</a>
                 <a class="dropdown-item" href="finance_account_link.html">Finance Accounts Link</a>
@@ -47,7 +47,6 @@ $('body').prepend(
               <div class="dropdown-menu" aria-labelledby="servicesDropdown">
                   <a class="dropdown-item" href="variable_data_montlyindices.html">Monthly Indices</a>
                   <a class="dropdown-item" href="variable_data_montlyplantdata.html">Monthly Plant Data</a>
-                  <a class="dropdown-item" href="variable_data_montlydudata.html">Monthly DU Data</a>
               </div>
           </li>
       </ul>
@@ -221,4 +220,11 @@ function splitTodiv(text){
       arr.push('<div>' + parts[i] + '</div>');
     }
     return arr.join('');
+}
+
+
+
+function htmlText(htmlString){
+    var tempElement = $('<div>').html(htmlString);
+    return tempElement.children().text();
 }
