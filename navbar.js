@@ -59,8 +59,27 @@ $('body').prepend(
           </li>
       </ul>
   </div>
-</nav>`
+</nav>
+
+<div class="modal" id="popup" tabindex="-1" role="dialog">
+<div class="modal-dialog modal-dialog-scrollable" role="document"  style="min-width: max-content;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="popupTitle"></h5>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p id="popupMessage"></p>  
+    </div>
+  </div>
+</div>
+</div>
+
+`
 )
+
 function handleUserChange() {}
 
 function Arg(name) {
@@ -227,4 +246,101 @@ function splitTodiv(text){
 function htmlText(htmlString){
     var tempElement = $('<div>').html(htmlString);
     return tempElement.children().text();
+}
+
+
+function getDataRow(data,code,col){
+    for (var i = 0; i < data.length; i++) {
+        if(data[i][col] == code )return data[i];
+    }
+}
+
+
+function popupShow(title,messages){
+    $('#popupTitle').text(title);
+    var msgModalText = $('#popupMessage')
+    msgModalText.empty();
+    for (var i = 0; i < messages.length; i++) {
+        msgModalText.append(`<div>${messages[i]}.</div>`);
+    }
+    $('#popup').show()
+}
+
+function popupHide(){
+    $('#popup').hide()
+}
+
+
+function cellVariableRef(ref){
+    var row = getDataRow(dataVariables,ref,1);
+    var title= 'NAN'
+    if(!!row){
+        title = `${row[2]}, ${row[3]}`
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
+}
+
+
+function cellContractRef(ref){
+    var row = getDataRow(dataContract,ref,0);
+    var title= 'NAN'
+    if(!!row){
+        title = 
+`Type: ${row[1]} 
+Seller: ${row[2]}
+Buyer: ${row[3]}
+Period From: ${row[5]}
+Period To:  ${row[6]}`
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
+}
+
+
+function cellPartyRef(ref){
+    var row = getDataRow(dataParties,ref,0);
+    var title= 'NAN'
+    if(!!row){
+        title = 
+`Name: ${row[1]} 
+Type: ${row[2]}`
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
+}
+
+function cellTemplateRef(ref){
+    var row = getDataRow(dataTemplates,ref,0);
+    var title= 'NAN'
+    if(!!row){
+        title =  row[1]
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
+}
+
+function cellTableRef(ref){
+    var row = getDataRow(dataVariableTables,ref,0);
+    var title= 'NAN'
+    if(!!row){
+        title = row[1]
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
+}
+
+function cellRoundingRef(ref){
+    var row = getDataRow(dataRoundingRule,ref,0);
+    var title= 'NAN'
+    if(!!row){
+        title = 
+`${row[1]} 
+(${row[3]} ${row[2]})`
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
+}
+
+function cellFinanceAccountRef(ref){
+    var row = getDataRow(dataFinanceAccount,ref,0);
+    var title= 'NAN'
+    if(!!row){
+        title = row[1]
+    }
+    return `<a href="#" title="${title}">${ref}</a>`
 }

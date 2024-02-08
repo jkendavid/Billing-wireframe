@@ -55,7 +55,7 @@ var dataVariables = [
     ['**FIELDS','interval1h','Hourly Interval','','','','No','Yes'],
     ['**FIELDS','plant','Plant','','','','Yes','Yes'],
     ['**FIELDS','wesmbuybid','Buyer WESM Billing ID','','','','Yes','Yes'],
-    ['**FIELDS','wesmsellbid','Seller WESM Billing ID','','','','Yes','Yes'],
+    ['**FIELDS','wesmselbid','Seller WESM Billing ID','','','','Yes','Yes'],
     ['**FIELDS','wesmbuymtn','Buyer WESM MTN','','','','Yes','Yes'],
     ['**FIELDS','wesmselmtn','Seller WESM MTN','','','','Yes','Yes'],
     ['**FIELDS','metersin','Meter SIN','','','','Yes','Yes'],
@@ -243,7 +243,7 @@ var dataContractFields =[
 var dataContractTemplates =[
     ['PSA-GENCO1-DU01-001','1','0','PSADU_V01.00','','','NEW','No',''],
     ['PSA-GENCO1-RES01-001','1','0','PSARES_V01.00','','','APPROVED','Yes',''],
-    ['PSA-RESO1-CC01-001','1','0','RSC_V01.00','','','APPROVED','Yes',''],
+    ['RSC-RESO1-CC01-001','1','0','RSC_V01.00','','','APPROVED','Yes',''],
 ]
 
 var dataTemplates =[
@@ -317,4 +317,16 @@ var dataFinanceAccount = [
     ['GENVATRV','Gen VAT Revenue Vatable','','Yes'],
     ['VOMEV','Variable O&M Expense Vatable','','Yes'],
     ['VOMRV','Variable O&M Revenue Vatable','','Yes'],
+]
+
+
+var dataFinanceAccountLink =[
+    ['GEN01','SELLER','CRF[BASE]','CRFRV','CRFEV'],
+    ['GEN01','SELLER','FOM[BASE]','FOMRV','FOMEV'],
+    ['GEN01','SELLER','VOM[BASE]','VOMRV','VOMEV'],
+    ['GEN01','SELLER','ER194[BASE]','ER194RNV','ER194ENV'],
+    ['GEN01','SELLER','FUEL[BASE]','FUELRV','FUELEV'],
+    ['GEN01','SELLER','CRF[VAT]|FOM[VAT]|VOM[VAT]|ER194[VAT]|FUEL[VAT]','GENVATRV','GENVATEV'],
+    ['RES01','BUYER','CRF[VAT]|FOM[VAT]|VOM[VAT]|ER194[VAT]|FUEL[VAT]','RESVATEV','RESVATRV'],
+    ['RES01','BUYER','CRF[BASE]|FOM[BASE]|VOM[BASE]|ER194[BASE]|FUEL[BASE]','RESVATEV','RESVATRV'],
 ]

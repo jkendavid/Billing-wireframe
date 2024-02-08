@@ -142,6 +142,8 @@
   function loadData(){
     var data = []
     $.each(dataContractTemplates, function(index, row) {
+      row[0] = cellContractRef(row[0])
+      row[3] = cellTemplateRef(row[3])
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
@@ -205,10 +207,10 @@
     if (editing !== "") {
       var rowIndex = parseInt(editing);
       var newData = table.row(rowIndex).data();
-      newData[0] = newContract;
+      newData[0] = cellContractRef(newContract);
       newData[1] = newIndex
       newData[2] = newRevNum;
-      newData[3] = newTemplate;
+      newData[3] = cellTemplateRef(newTemplate);
       newData[4] = newPeriodFrom;
       newData[5] = newPeriodTo;
       newData[6] = newStatus;
@@ -229,7 +231,7 @@
         }
       }
 
-      var newRow = table.row.add([newContract, newIndex, newRevNum, newTemplate, newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
+      var newRow = table.row.add([cellContractRef(newContract), newIndex, newRevNum, cellTemplateRef(newTemplate), newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
                       `<td>${rowButtons}</td>`,
       ]).draw().node();
     }    

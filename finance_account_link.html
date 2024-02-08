@@ -197,15 +197,54 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
 
+<script src="data.js"></script>
 <script src="navbar.js"></script>
 <script>
+
+  var rowbtn = '<button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button>'
+  
+  function cellFinanceLinkVariableRef(ref,type){
+    var row = getDataRow(dataVariables,ref,1);
+    var title= 'NAN'
+    if(!!row){
+        title = `${row[2]}, ${row[3]}`
+    }
+    return `<a href="#" title="${title} [${type}]">${ref}[${type}]</a>`
+  }
+
+  function formatCharges(datatext){
+    var html = []
+    $.each(datatext.split("|"), function(index, data) { 
+      var index = data.indexOf('[');
+      var ref = data.substring(0, index);
+      var type = data.substring(index + 1, data.length - 1);  
+      html.push(`<div>${cellFinanceLinkVariableRef(ref,type)}</div>`)
+    });
+    return html
+  }
+
+  function loadData(){
+    var data = []
+    $.each(dataFinanceAccountLink, function(index, row) {      
+      row[0] = cellPartyRef(row[0])
+      row[2] = formatCharges(row[2])
+      row[4] = cellFinanceAccountRef(row[3])
+      row[3] = cellFinanceAccountRef(row[4])
+      row.push(rowbtn);
+      data.push(row)
+    });
+    return data;
+  }
+  
+
   var table; // Declare table variable globally
 
   $(document).ready(function() {
     // DataTable initialization
     table = $('#dataTable').DataTable({
       paging: true, 
-      searching: true,      
+      searching: true, 
+      data:loadData()     
     });
 
 
@@ -252,7 +291,6 @@
     // Check if editing an existing entry
     var editing = document.getElementById("editRowIndex").value;
     if (editing !== "") {
-      // Update existing row
       var row = table.row(parseInt(editing)).node();
       row.cells[0].innerText = newParty;
       row.cells[1].innerText = newSide;
@@ -260,15 +298,11 @@
       row.cells[3].innerText = newAccountPos;
       row.cells[4].innerText = newAccountNeg;
 
-      // Reset edit flag
       document.getElementById("editRowIndex").value = "";
     } else {
-      // Create a new table row
-    console.log( newChargesTd.join(''))
-      var newRow = table.row.add([newParty, newSide, newChargesTd.join(''), newAccountPos, newAccountNeg, '<button class="btn btn-info btn-sm" onclick="editEntry(this)">Edit</button>']).draw().node();
+      var newRow = table.row.add([newParty, newSide, newChargesTd.join(''), newAccountPos, newAccountNeg, rowbtn]).draw().node();
     }
 
-    // Clear form fields
       document.getElementById("newParty").value = "";
       document.getElementById("newSide").value = "";
       document.getElementById("newCharges").value = "";
@@ -308,6 +342,11 @@
     document.getElementById("editRowIndex").value = table.row(row).index();
   }
 
+
+  updateSelectOption($('#newAccountNeg'),dataFinanceAccount); 
+  updateSelectOption($('#newAccountPos'),dataFinanceAccount); 
+
+  
 </script>
 
 </body>

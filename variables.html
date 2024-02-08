@@ -137,6 +137,8 @@
   function loadData(){
     var data = []
     $.each(dataVariables, function(index, row) {
+      row[0]=cellTableRef(row[0])
+      row[4] = cellRoundingRef(row[4])
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
@@ -203,11 +205,11 @@
     if (editing !== "") {      
       var rowIndex = parseInt(editing);
       var newData = table.row(rowIndex).data();
-      newData[0] = newTable;
+      newData[0] = cellTableRef(newTable);
       newData[1] = newCode;
       newData[2] = newText;
       newData[3] = newUnit;
-      newData[4] = newRounding;
+      newData[4] = cellRoundingRef(newRounding);
       newData[5] = newDescription;
       newData[6] = newCustom;
       newData[7] = newActive;
@@ -224,7 +226,7 @@
         }
       }
 
-      var newRow = table.row.add([newTable,newCode, newText, newUnit, newRounding, newDescription,newCustom, newActive, newCreatedBy, newCreatedTime, 
+      var newRow = table.row.add([cellTableRef(newTable),newCode, newText, newUnit, cellRoundingRef(newRounding), newDescription,newCustom, newActive, newCreatedBy, newCreatedTime, 
                       `<td>${rowButtons}</td>`,
       ]).draw().node();
     }    

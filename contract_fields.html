@@ -186,6 +186,8 @@ var rowButtons =`<button class="btn btn-info btn-sm editButton" onclick="editEnt
 function loadData(){
     var data = []
     $.each(dataContractFields, function(index, row) {
+      row[0]=cellContractRef(row[0])
+      row[1]=cellVariableRef(row[1])
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
@@ -253,8 +255,8 @@ function loadData(){
     if (editing !== "") {      
       var rowIndex = parseInt(editing);
       var newData = table.row(rowIndex).data();
-      newData[0] = newContract;
-      newData[1] = newField
+      newData[0] = cellContractRef(newContract);
+      newData[1] = cellVariableRef(newField)
       newData[2] = newIndex;
       newData[3] = newRevNum;
       newData[4] = newValue;
@@ -277,8 +279,7 @@ function loadData(){
           return;
         }
       }
-
-      var newRow = table.row.add([newContract, newField, newIndex, newRevNum, newValue, newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
+      var newRow = table.row.add([cellContractRef(newContract), cellVariableRef(newField), newIndex, newRevNum, newValue, newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
                       `<td>${rowButtons}</td>`,
       ]).draw().node();
     }    

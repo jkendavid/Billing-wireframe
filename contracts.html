@@ -149,6 +149,8 @@
   function loadData(){
     var data = []
     $.each(dataContract, function(index, row) {
+      row[2] = cellPartyRef(row[2])
+      row[3] = cellPartyRef(row[3])
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
@@ -220,8 +222,8 @@
       var newData = table.row(rowIndex).data();
       newData[0] = newCode;
       newData[1] = newType
-      newData[2] = newSeller;
-      newData[3] = newBuyer;
+      newData[2] = cellPartyRef(newSeller);
+      newData[3] = cellPartyRef(newBuyer);
       newData[4] = newRevNum;
       newData[5] = newPeriodFrom;
       newData[6] = newPeriodTo;
@@ -242,7 +244,7 @@
         }
       }
 
-      var newRow = table.row.add([newCode, newType, newSeller, newBuyer, newRevNum, newPeriodFrom, newPeriodTo, newDescription, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
+      var newRow = table.row.add([newCode, newType, cellPartyRef(newSeller), cellPartyRef(newBuyer), newRevNum, newPeriodFrom, newPeriodTo, newDescription, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
                       `<td>${rowButtons}</td>`,
       ]).draw().node();
     }    

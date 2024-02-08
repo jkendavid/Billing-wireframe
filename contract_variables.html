@@ -7,6 +7,10 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <title>Contract Variables</title>
   <style>   
+    .tooltip-inner {
+      max-width: 400px; 
+      font-size: 56px;
+    }
 
     td .btn-sm{
       width: 80px;
@@ -144,6 +148,8 @@
   function loadData(){
     var data = []
     $.each(dataContractVariables, function(index, row) {
+      row[0] = cellContractRef(row[0])
+      row[1] = cellVariableRef(row[1])      
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
@@ -211,8 +217,8 @@
     if (editing !== "") {      
       var rowIndex = parseInt(editing);
       var newData = table.row(rowIndex).data();
-      newData[0] = newContract;
-      newData[1] = newVariable
+      newData[0] = cellContractRef(newContract);
+      newData[1] = cellVariableRef(newVariable)
       newData[2] = newIndex;
       newData[3] = newRevNum;
       newData[4] = newValue;
@@ -236,7 +242,7 @@
         }
       }
 
-      var newRow = table.row.add([newContract, newVariable, newIndex, newRevNum, newValue, newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
+      var newRow = table.row.add([cellContractRef(newContract), cellVariableRef(newVariable), newIndex, newRevNum, newValue, newPeriodFrom, newPeriodTo, newStatus,  newActive, newRemarks, newCreatedBy, newCreatedTime, 
                       `<td>${rowButtons}</td>`,
       ]).draw().node();
     }    

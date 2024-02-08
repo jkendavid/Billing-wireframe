@@ -116,6 +116,7 @@
   function loadData(){
     var data = []
     $.each(dataFieldData, function(index, row) {
+      row[0] = cellVariableRef(row[0])
       row.push(getUser());
       row.push(getCurrentTime());
       row.push(rowButtons);
