@@ -12,11 +12,8 @@ $('body').prepend(
                   Contract
               </a>
               <div class="dropdown-menu" aria-labelledby="servicesDropdown">
-              <a class="dropdown-item" href="contracts.html">Contracts</a>
-                  <a class="dropdown-item" href="parties.html">Parties</a>
-                  <a class="dropdown-item" href="contract_variables.html">Contract Variables</a>
-                  <a class="dropdown-item" href="contract_fields.html">Contract Fields</a>
-                  <a class="dropdown-item" href="contract_templates.html">Contract Template</a>
+                <a class="dropdown-item" href="parties.html">Parties</a>
+                <a class="dropdown-item" href="contracts.html">Contracts</a>
               </div>
           </li>
           <li class="nav-item dropdown">
@@ -34,6 +31,7 @@ $('body').prepend(
             </a>
             <div class="dropdown-menu" aria-labelledby="servicesDropdown">
                 <a class="dropdown-item" href="variables.html">Variables</a>
+                <a class="dropdown-item" href="window_categories.html">Window Category</a>
                 <a class="dropdown-item" href="variable_tables.html">Variable Tables</a>
                 <a class="dropdown-item" href="field_values.html">Fields Data</a>
                 <a class="dropdown-item" href="finance_accounts.html">Finance Accounts</a>
@@ -203,7 +201,7 @@ if (typeof JSON === 'undefined') {
         return JSON.parse(str);
       }
     };
-  }
+}
 
 
 function deepCopy(obj) {

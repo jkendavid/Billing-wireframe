@@ -125,6 +125,7 @@
               <button class="btn btn-danger btn-sm" onclick="removeCalculation(this)">Remove</button>
               <button class="btn btn-danger btn-sm" onclick="approveCancelCalculation(this)" style="display: block;width:120px">Approve Cancel</button>
               <button class="btn btn-danger btn-sm" onclick="rejectCancelCalculation(this)" style="display: block;width:120px">Reject Cancel</button>
+              <button class="btn btn-info btn-sm" onclick="offsetCalculation(this)" style="display: block;width:120px">Add offset</button>
             </td>
           </tr>
         </tbody>
@@ -247,6 +248,40 @@
         </div>
       </div>    
 
+      
+      <div class="modal mx-auto" id="offsetModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-scrollable" role="document" style="min-width: max-content;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Offset Calculations</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="">
+                <table class="table table-bordered" id="offsetTblContracts">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th style="min-width:220px;">Reference</th>
+                      <th>Period</th>
+                      <th style="min-width:220px;">Contract</th>
+                      <th>Buyer</th>
+                      <th>Seller</th>
+                      <th>Rev No.</th>
+                    </tr>
+                  </thead>
+                  <tbody>                          
+                  </tbody>
+                </table>                
+                <button type="button" class="btn btn-info btn-sm" onclick="offsetGenerate()" id="offsetGenerateButton">Generate</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>    
+
       <div class="modal" id="messageModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-scrollable" role="document"   style="min-width: max-content;">
           <div class="modal-content">
@@ -292,7 +327,8 @@
      <button class="btn btn-danger btn-sm" onclick="cancelCalculation(this)">Cancel</button>
      <button class="btn btn-danger btn-sm" onclick="removeCalculation(this)">Remove</button>
      <button class="btn btn-danger btn-sm" onclick="approveCancelCalculation(this)" style="display: block;width:120px">Approve Cancel</button>
-     <button class="btn btn-danger btn-sm" onclick="rejectCancelCalculation(this)" style="display: block;width:120px">Reject Cancel</button>`
+     <button class="btn btn-danger btn-sm" onclick="rejectCancelCalculation(this)" style="display: block;width:120px">Reject Cancel</button>
+     <button class="btn btn-info btn-sm" onclick="offsetCalculation(this)" style="display: block;width:120px">Add offset</button>`
 
 
   var tableCalculations = $('#tableCalculations').DataTable({  
@@ -983,7 +1019,7 @@
         var releaseType = selRow.children[7].textContent;
         for (var j = 0; j < tableCalculations.rows().count(); j++) {
           var newData = tableCalculations.row(j).data();
-          if(htmlText(newData[0]) == ref ){
+          if(htmlText(newData[0]) == ref||htmlText(newData[iOffsetRef])  == ref){
             newData[iStatus] = 'RELEASED';
             newData[iReleasePeriod] = period_text;
             newData[iReleaseType] = releaseType;
@@ -1002,6 +1038,7 @@
     var trs = $('#tableCalculations').find('tbody tr')
     $.each(trs, function(i,tr){
       var status = tr.cells[iStatus].innerText;
+      var revno = tr.cells[iRevno].innerText;
       var tdControls = tr.children[iBtn]
       tdControls.children[0].style.display = (status=="NEW"||status=="RETURNED")&&user=="MKTG"?"block":"none";
       tdControls.children[1].style.display = status=="FOR APPROVAL"&&user=="MKTGMNGR"?"block":"none";
@@ -1010,7 +1047,9 @@
       tdControls.children[4].style.display = (status=="NEW"||status=="RETURNED")&&user=="MKTG"?"block":"none";
       tdControls.children[5].style.display = (status=="FOR CANCEL APPROVAL")&&user=="MKTGMNGR"?"block":"none";
       tdControls.children[6].style.display = (status=="FOR CANCEL APPROVAL")&&user=="MKTGMNGR"?"block":"none";
+      tdControls.children[7].style.display = (revno!="0"&&status=="APPROVED")&&user=="MKTG"?"block":"none";
     })
+
     $('#generateNewBtn')[0].style.display = user=="MKTG"?"block":"none";
     $('#generateRevBtn')[0].style.display = user=="MKTG"?"block":"none";
     $('#generateReleaseBtn')[0].style.display = user=="MKTG"?"block":"none";

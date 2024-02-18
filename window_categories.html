@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <title>Window Categories</title>
+  <style>   
+    .form-group.row{
+      max-width: 800px;
+    }
+  </style>
+</head>
+<body>  
+  <div id="container" class="container mt-4">
+  <div>
+    <h2>Window Categories</h2>      
+    <div class="form-row my-2">
+      <div class="form-group">
+        <select class="form-control" id="optWindowWindows" onchange="refreshTableWindows()"></select>
+      </div>
+      <div class="mx-auto"></div>        
+      <div>
+        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateWindow()">Add New</button>
+      </div>
+    </div>
+
+    <table class="table table-bordered" id="tableWindows">
+      <thead>
+        <tr></tr>
+      </thead>
+      <tbody>
+
+      </tbody>
+    </table>  
+  </div>
+
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="navbar.js"></script>
+<script src="data.js"></script>
+<script src="functions.js"></script>
+
+<script>
+
+  var windowWindow = ''
+
+  function optWindowWindows(){
+    var opt =$('#optWindowWindows')
+    opt.empty()   
+    opt.append(`<option value='parties'>Parties</option>`)
+    opt.append(`<option value='contracts'>Contracts</option>`)
+  }
+  optWindowWindows()
+
+  const headers = ['code','text','approval']
+
+
+  function getWindowData(){
+    return window_categories.filter(x=> x.window == windowWindow).map(x=> {
+      //var rule = deepCopy(rounding_rules).filter(y=> y.code = x.rounding)[0]
+      //x.rounding =  rule?rule.text:''
+      return x
+    })
+  }
+
+  function refreshTableWindows(){    
+    windowWindow = $('#optWindowWindows').val();
+    var table = $('#tableWindows');
+    var trHead = table.find('thead tr');
+    trHead.empty();
+    headers.map(field => {
+      const variable = variables.find(x => x.code === field);
+      trHead.append(`<th>${variable.text}</th>`);
+    });
+    trHead.append(`<th></th>`);
+
+    var tbody = table.find('tbody');
+    tbody.empty();
+
+    getWindowData().map(data=>{
+      var strTr = [`<tr>`];
+      var status
+      headers.forEach(field => {  
+        strTr.push(`<td>${data[field] || ''}</td>`);     
+      });
+      strTr.push(`<td><a href="#" class="mx-2" onclick="updateWindow('${data.code}')">Edit</a></td>`)
+
+      strTr.push('</tr>');
+      tbody.append(strTr.join(''));
+    })
+
+  }
+
+  function updateWindow(code=''){
+    var html = [];
+    var rowData = getWindowData().filter(x=> x.code == code)[0];
+
+    html.push('<div>');
+    html.push('<div class="rowFields">');
+    headers.map(field=>{
+      var variable = variables.filter(x => x.code == field)[0]
+      var rowField = window_fields.filter(x => x.field == field && x.category == partyCategory)[0]
+
+      var readonly = code?['code'].includes(field):false
+      var required = variable.required??true
+      var multiple = variable.category!='system'&&rowField.instance=='multiple'
+      var value = code?rowData[field]:''
+
+      if(variable&&variable.type=='text')html.push(htmlControlText('form',variable.code,variable.text,value,required,readonly))
+      if(variable&&variable.type=='domain')html.push(htmlControlOption('form',variable.code,variable.text,value,required,readonly,getOptionDomain(field),multiple))
+      if(variable&&variable.type=='number')html.push(htmlControlNumber('form',variable.code,variable.text,value,required,readonly,step))
+    })
+    html.push('</div>');
+
+    
+    html.push('</div>');
+    html.push(`<button type="button" class="btn btn-primary" onclick="saveWindow('${code}')">Save</button>`)
+    modal = modalShow(code?'New':'Update' + ' Variable',html.join(''))
+  }
+
+  function saveWindow(code=""){
+    var errFields = []
+    var newData = {window:windowWindow}
+    $.each(modal.find('.form-control'),function(i,v){
+      var field = $(v).attr('val');
+      newData[field]=$(v).val()
+      if ($(v).prop('required')&&!$(v).val()){
+        var variable = variables.filter(x=> x.code == field)[0]
+        errFields.push(variable.text)
+      }
+    })
+
+    if (errFields.length>0){
+      alert('Required fields: \n• ' + errFields.join("\n• "));
+      return
+    }
+    if(code){
+      var data = window_categories.filter(x=> x.code == code)[0]
+      Object.assign(data, newData);      
+    }else{
+      window_categories.push(newData)
+    }
+    
+
+
+    modal.modal('hide')
+    refreshTableWindows()
+  }
+
+  refreshTableWindows()
+ 
+</script>
+
+
+</body>
+</html>
