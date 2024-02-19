@@ -88,10 +88,12 @@ function htmlControlPeriod(type,id,label,value,required,readonly){
 function htmlControlOption(type,id,label,value,required,readonly,options,multiple){
     var htmlOption = []
     htmlOption.push(`<option value=""></option>`);
-    options.map(option=> {
-        var selected = value==option.value?'selected':''
-        htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
-    })
+    if(options){
+        options.map(option=> {
+            var selected = value==option.value?'selected':''
+            htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
+        })
+    }
     return htmlControlFormat(type,`<select class="form-control" prevval="${value}" val="${id}" ${required?'required':''}  ${readonly?'readonly':''} ${multiple?'multiple':''}>${htmlOption}</select>`,label,required) 
 }
 
@@ -123,10 +125,12 @@ function htmlControl_Number(obj,readonly=false){
 function htmlControl_Option(obj,readonly=false){
     var htmlOption = []
     htmlOption.push(`<option value=""></option>`);
-    obj.options.map(option=> {
-        var selected = obj.value==option.value?'selected':''
-        htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
-    })
+    if(obj.options){
+        obj.options.map(option=> {
+            var selected = obj.value==option.value?'selected':''
+            htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
+        })
+    }
     return htmlControlFormat(obj.selector,`<select ${obj.extension} class="form-control" prevval="${obj.value}" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''} ${obj.multiple?'multiple':''}>${htmlOption}</select>`,obj.text,obj.required) 
 }
 

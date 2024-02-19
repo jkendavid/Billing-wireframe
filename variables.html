@@ -124,7 +124,7 @@
     html.push('<div>');
     html.push('<div class="rowFields">');      
     if(code)var rowData = getVariableData().filter(x=> x.code == code)[0];  
-    deepCopy(headers.filter(x=> x.row)).map(header=>{
+    deepCopy(headers).filter(x=> x.row).map(header=>{
       if(code)header.value = rowData[header.code]
       html.push(htmlControl(header,code))
     })
@@ -196,7 +196,7 @@
     }else{
       variables.push(newData)
     }
-    variable_domain_codes = variable_domain_codes.filter(x => x.variable !== 'plant_sources');
+    variable_domain_codes = variable_domain_codes.filter(x => x.variable !== newData.code);
     domainValues.map(x=>{
       variable_domain_codes.push(x)
     })

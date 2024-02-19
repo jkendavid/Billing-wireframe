@@ -60,14 +60,38 @@
     opt.append(`<option value='contracts'>Contracts</option>`)
   }
   optWindowWindows()
+  
+  const headers = [
+    {row:true,selector:'form',code:'code',text:'Code',readonly:true,required:true,type:'text'},
+    {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
+    {row:true,selector:'form',code:'approval',view:'approval_text',text:'Approval Rule',readonly:false,required:false,type:'domain'},
+    {row:false,selector:'form',code:'fields',view:'fields_text',text:'Fields',readonly:false,required:false,type:'domain'},
+  ]
 
-  const headers = ['code','text','approval']
-
+  const fieldHeaders = [
+    {
+      selector:'table',code:'field',text:'Field',readonly:false,required:true,type:'domain'
+    },
+    {
+      selector:'table',code:'field_locs',text:'Location',readonly:false,required:true,type:'domain',
+      options:[{value:'row',text:'row'},{value:'detail',text:'detail'}]
+    },
+    {
+      selector:'table',code:'instance',text:'Instance',readonly:false,required:true,type:'domain',
+      options:[{value:'single',text:'single'},{value:'multiple',text:'multiple'}]
+    },
+    {
+      selector:'table',code:'required',text:'Required',readonly:false,required:true,type:'domain',
+      options:[{value:1,text:'Yes'},{value:0,text:'No'}]
+    },
+  ]
 
   function getWindowData(){
     return window_categories.filter(x=> x.window == windowWindow).map(x=> {
-      //var rule = deepCopy(rounding_rules).filter(y=> y.code = x.rounding)[0]
-      //x.rounding =  rule?rule.text:''
+      var approval = deepCopy(approval_rules).filter(y=> y.code == x.approval)[0]
+      x.approval_text =  approval?approval.text:''
+      x.fields = deepCopy(window_fields).filter(y=> y.category == x.code)
+      x.fields_text = x.fields.map(x=> {return x.field})
       return x
     })
   }
@@ -77,9 +101,8 @@
     var table = $('#tableWindows');
     var trHead = table.find('thead tr');
     trHead.empty();
-    headers.map(field => {
-      const variable = variables.find(x => x.code === field);
-      trHead.append(`<th>${variable.text}</th>`);
+    headers.map(header => {
+      trHead.append(`<th>${header.text}</th>`);
     });
     trHead.append(`<th></th>`);
 
@@ -89,68 +112,115 @@
     getWindowData().map(data=>{
       var strTr = [`<tr>`];
       var status
-      headers.forEach(field => {  
-        strTr.push(`<td>${data[field] || ''}</td>`);     
+      headers.forEach(header => {  
+        strTr.push(`<td>${data[header.view??header.code] ?? ''}</td>`);     
       });
       strTr.push(`<td><a href="#" class="mx-2" onclick="updateWindow('${data.code}')">Edit</a></td>`)
-
       strTr.push('</tr>');
       tbody.append(strTr.join(''));
     })
 
+    fieldHeaders.filter(x=> x.code == 'field')[0].options =
+      deepCopy(variables).filter(x=> ['partybuyer', 'partyseller'].includes(x.category) || (x.category === 'contract' && windowWindow === 'contracts') ).map(x=>{
+          return {value:x.code,text:x.code}
+      })
   }
 
   function updateWindow(code=''){
     var html = [];
-    var rowData = getWindowData().filter(x=> x.code == code)[0];
-
     html.push('<div>');
-    html.push('<div class="rowFields">');
-    headers.map(field=>{
-      var variable = variables.filter(x => x.code == field)[0]
-      var rowField = window_fields.filter(x => x.field == field && x.category == partyCategory)[0]
-
-      var readonly = code?['code'].includes(field):false
-      var required = variable.required??true
-      var multiple = variable.category!='system'&&rowField.instance=='multiple'
-      var value = code?rowData[field]:''
-
-      if(variable&&variable.type=='text')html.push(htmlControlText('form',variable.code,variable.text,value,required,readonly))
-      if(variable&&variable.type=='domain')html.push(htmlControlOption('form',variable.code,variable.text,value,required,readonly,getOptionDomain(field),multiple))
-      if(variable&&variable.type=='number')html.push(htmlControlNumber('form',variable.code,variable.text,value,required,readonly,step))
+    html.push('<div class="rowFields">');      
+    if(code)var rowData = getWindowData().filter(x=> x.code == code)[0];  
+    deepCopy(headers).filter(x=> x.row==true).map(header=>{
+      if(header.code=='approval'){
+        header.options = approval_rules.map(x=>{
+          return {value: x.code,text:x.text}
+        })
+      }
+      if(code)header.value = rowData[header.code]
+      html.push(htmlControl(header,code))
     })
-    html.push('</div>');
-
-    
+    html.push('</div>');    
+    html.push('<div class="extFields">');  
+    html.push('<table class="table table-bordered">'); 
+    html.push('<tr>');  
+    fieldHeaders.map(header=>{
+      html.push(`<th>${header.text}</th>`); 
+    })
+    html.push(`<td><a href="#" class="mx-2" onclick="addWindowDetailRow(this)">Add</a></td>`); 
+    html.push('</tr>');  
+    if(rowData)rowData.fields.map(row=>{html.push(windowDetailRow(code,row))})
+    html.push('</table>');  
+    html.push('</div>');  
     html.push('</div>');
     html.push(`<button type="button" class="btn btn-primary" onclick="saveWindow('${code}')">Save</button>`)
-    modal = modalShow(code?'New':'Update' + ' Variable',html.join(''))
+    modal = modalShow((code?'New':'Update') + ' Window',html.join(''))
+  }
+  
+  function addWindowDetailRow(ctrl,code){
+    $(ctrl.closest('tbody')).append(windowDetailRow(code))
+  }
+
+  function removeWindowDetailRow(ctrl,code){  
+    var confirmation = confirm("Are you sure you want to remove this entry?");
+    if (confirmation) { 
+      $(ctrl.closest('tr')).remove()
+    }
+  }
+
+  function windowDetailRow(code,row=''){
+    console.log(code)
+    console.log(row)
+    var html = []
+    html.push('<tr class="extRow">');  
+    deepCopy(fieldHeaders).map(header=>{
+      if(code)header.value = row[header.code]
+      html.push(`<td>${htmlControl(header,'')}</td>`); 
+    })
+    html.push( `<td><a href="#" class="mx-2" onclick="removeWindowDetailRow(this)">Remove</a></td>`)
+    html.push('</tr>');   
+    return html.join('')
   }
 
   function saveWindow(code=""){
     var errFields = []
     var newData = {window:windowWindow}
-    $.each(modal.find('.form-control'),function(i,v){
+    $.each(modal.find('.rowFields .form-control'),function(i,v){
       var field = $(v).attr('val');
       newData[field]=$(v).val()
       if ($(v).prop('required')&&!$(v).val()){
-        var variable = variables.filter(x=> x.code == field)[0]
-        errFields.push(variable.text)
+        errFields.push(headers.filter(x=> x.code == field)[0].text)
       }
+    })
+    var newFieldData = []
+    $.each(modal.find('.extRow'),function(i,row){
+      var newFieldRow ={category:newData.code}
+      $.each($(row).find('.form-control'),function(j,ctrl){
+        var field = $(ctrl).attr('val');
+        newFieldRow[field]=$(ctrl).val()
+        if ($(ctrl).prop('required')&&!$(ctrl).val()){
+          errFields.push(fieldHeaders.filter(x=> x.code == field)[0].text)
+        }
+      })
+      newFieldData.push(newFieldRow)
     })
 
     if (errFields.length>0){
       alert('Required fields: \n• ' + errFields.join("\n• "));
       return
     }
+
     if(code){
       var data = window_categories.filter(x=> x.code == code)[0]
       Object.assign(data, newData);      
     }else{
       window_categories.push(newData)
-    }
-    
-
+    }  
+   
+    window_fields = window_fields.filter(x => x.category !== newData.code);
+    newFieldData.map(x=>{
+      window_fields.push(x)
+    })
 
     modal.modal('hide')
     refreshTableWindows()

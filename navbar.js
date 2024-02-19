@@ -32,21 +32,12 @@ $('body').prepend(
             <div class="dropdown-menu" aria-labelledby="servicesDropdown">
                 <a class="dropdown-item" href="variables.html">Variables</a>
                 <a class="dropdown-item" href="window_categories.html">Window Category</a>
-                <a class="dropdown-item" href="variable_tables.html">Variable Tables</a>
-                <a class="dropdown-item" href="field_values.html">Fields Data</a>
+                <a class="dropdown-item" href="approval_rules.html">Approval Rules</a>
                 <a class="dropdown-item" href="finance_accounts.html">Finance Accounts</a>
                 <a class="dropdown-item" href="finance_account_link.html">Finance Accounts Link</a>
             </div>
         </li>
-          <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Determinants
-              </a>
-              <div class="dropdown-menu" aria-labelledby="servicesDropdown">
-                  <a class="dropdown-item" href="variable_data_montlyindices.html">Monthly Indices</a>
-                  <a class="dropdown-item" href="variable_data_montlyplantdata.html">Monthly Plant Data</a>
-              </div>
-          </li>
+          
       </ul>
       <ul class="navbar-nav ml-auto">         
           <li class="nav-item">
