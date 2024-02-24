@@ -17,10 +17,10 @@ var approval_rules = [
 ]
 
 var approval_steps = [
-    {rule:'THREESTEP',index:1,code:'THREESTEPFIRST',text:'1st Approval',skipable:false},
-    {rule:'THREESTEP',index:2,code:'THREESTEPSECOND',text:'2nd Approval',skipable:false},
-    {rule:'THREESTEP',index:3,code:'THREESTEPFINAL',text:'Final Approval',skipable:false},
-    {rule:'ONESTEP',index:1,code:'ONESTEPFINAL',text:'Final One Step Approval',skipable:false},
+    {rule:'THREESTEP',index:1,code:'THREESTEPFIRST',text:'1st Approval',skipable:false, approver:['MKTG','MKTGMGR']},
+    {rule:'THREESTEP',index:2,code:'THREESTEPSECOND',text:'2nd Approval',skipable:false, approver:['MKTGMGR']},
+    {rule:'THREESTEP',index:3,code:'THREESTEPFINAL',text:'Final Approval',skipable:false, approver:['MKTGMGR']},
+    {rule:'ONESTEP',index:1,code:'ONESTEPFINAL',text:'Final One Step Approval',skipable:false, approver:['MKTG','MKTGMGR']},
 ]
 
 var variables = [
@@ -149,7 +149,6 @@ var parties = [
     {category:'CC',code:'CC01', owned:'Yes'},
     {category:'CC',code:'CC02', owned:'No'},
 ]
-
 
 var contracts = [
     {category:'PSA_COAL',code:'PSA-GEN01-00001',seller:'GEN01',buyer:'DU01'},

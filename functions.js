@@ -46,6 +46,10 @@ function getOptionDomain(variable){
         case 'approval':
             approval_rules.forEach(x => options.push({value:x.code,text:x.text}));
             break;
+        case 'bool':
+            options.push({value:1,text:'Yes'})
+            options.push({value:0,text:'No'})
+            break;
         default:
             variable_domain_codes.filter(x => x.variable === variable).forEach(x => options.push({value:x.code,text:x.code}));
     }

@@ -89,7 +89,7 @@
     return variables.filter(x=> x.category == variableCategory).map(x=> {
       var rule = deepCopy(rounding_rules).filter(y=> y.code = x.rounding)[0]
       x.rounding_text =  rule?rule.text:'',
-      x.domain_values = variable_domain_codes.filter(y=> y.variable == x.code).map(x=> {return x.code}).join('<br>')
+      x.domain_values = variable_domain_codes.filter(y=> y.variable == x.code).map(x=> {return x.code})
       return x
     })
   }

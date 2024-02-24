@@ -286,11 +286,11 @@
     }  
 
     var tran = getLast(window_update_trans.filter(x=> x.party == code))
-    var tranStatus = getLast(tran.status);
-    
-    var stats = getLast(tran.status).status
+    var stats = tran?getLast(tran.status).status:''
+
     if(stats=='draft'||stats=='returned'){
       if(stats=='draft'){
+        var tranStatus = getLast(tran.status);
         Object.assign(tranStatus, newTrans.status[0]);
       }else{
         tran.status.push(newTrans.status[0])

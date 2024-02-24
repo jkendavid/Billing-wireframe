@@ -72,7 +72,7 @@
     return deepCopy(contracts)
       .filter(x => x.category === contractCategory)
       .map(contract => {
-          window_update_trans
+        deepCopy(window_update_trans)
           .filter(tran=> tran.contract == contract.code&&tran.window=='contracts').forEach(tran => {
             var tranStatus = getLast(tran.status); 
             if(tranStatus.status !=='canceled') {
@@ -87,10 +87,11 @@
                 var variable = variables.filter(x=> x.code == field.field)[0]  
                 var wField = window_fields.filter(x=> x.field == field.field && x.category=== contractCategory)[0]  
                 if((wField?wField.field_locs:variable.field_locs) == 'row'){
-                  field.data.forEach(data =>{
-                    if(data.index = -1)contract[field.field] = data.value
-                  })                  
+                  contract[field.field] = getLast(field.data).value           
                 } else{
+                  field.data.map(data=>{
+                    if(data.reffields)data.reffields.map(x=>{data[x.field]=x.value})
+                  })
                   contract[field.field]= field.data
                 }
               });
@@ -267,12 +268,16 @@
       var newFieldData = {field:field,data:[]}
 
       $.each($(v).find('.datarow'),function(j,datarow){
-        var data = {}
+        var data = {reffields:[]}
         $.each($(datarow).find('.form-control'),function(k,control){
           var prevVal = $(control).attr('prevval');
           var newVal = $(control).val()
-          if(String(prevVal)!=String(newVal))update=TextTrackCue
-          data[detailFieldList[k]] = newVal
+          if(String(prevVal)!=String(newVal))update=true
+          if(detailFieldList[k]=='value'){
+            data.value = newVal
+          }else{
+            data.reffields.push({field:detailFieldList[k],value:newVal})
+          }
         })        
         newFieldData.data.push(data)
       }) 
@@ -293,10 +298,10 @@
     }  
     
     var tran = getLast(window_update_trans.filter(x=> x.contract == code))
-    var tranStatus = getLast(tran.status);
-    var stats = getLast(tran.status).status
+    var stats = tran?getLast(tran.status).status:''
     if(stats=='draft'||stats=='returned'){
       if(stats=='draft'){
+        var tranStatus = getLast(tran.status);
         Object.assign(tranStatus, newTrans.status[0]);
       }else{
         tran.status.push(newTrans.status[0])
@@ -370,8 +375,7 @@
     var html = []
     deepCopy(window_update_trans)
     .filter(tran=> tran.contract == code&&tran.window=='contracts')
-    .map(tran=>{
-      
+    .map(tran=>{      
       html.push('<div class="card p-3 mb-3">')
       html.push('<div style="max-width:400px">')
       html.push('<h5>Update Values</h5>')      

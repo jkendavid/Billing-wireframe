@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <title>Window Categories</title>
+  <title>Approval Rules</title>
   <style>   
     .form-group.row{
       max-width: 800px;
@@ -15,18 +15,15 @@
 <body>  
   <div id="container" class="container mt-4">
   <div>
-    <h2>Window Categories</h2>      
+    <h2>Approval Rules</h2>      
     <div class="form-row my-2">
-      <div class="form-group">
-        <select class="form-control" id="optWindowWindows" onchange="refreshTableWindows()"></select>
-      </div>
       <div class="mx-auto"></div>        
       <div>
-        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateWindow()">Add New</button>
+        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateApproval()">Add New</button>
       </div>
     </div>
 
-    <table class="table table-bordered" id="tableWindows">
+    <table class="table table-bordered" id="tableApprovals">
       <thead>
         <tr></tr>
       </thead>
@@ -50,56 +47,45 @@
 <script src="functions.js"></script>
 
 <script>
+ 
 
-  var windowWindow = ''
-
-  function optWindowWindows(){
-    var opt =$('#optWindowWindows')
-    opt.empty()   
-    opt.append(`<option value='parties'>Parties</option>`)
-    opt.append(`<option value='contracts'>Contracts</option>`)
-    opt.append(`<option value='dynamic'>Dynamic</option>`)
-  }
-  optWindowWindows()
-  
   const headers = [
     {row:true,selector:'form',code:'code',text:'Code',readonly:true,required:true,type:'text'},
     {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
-    {row:true,selector:'form',code:'approval',view:'approval_text',text:'Approval Rule',readonly:false,required:false,type:'domain'},
-    {row:false,selector:'form',code:'fields',view:'fields_text',text:'Fields',readonly:false,required:false,type:'domain'},
+    {row:false,selector:'form',code:'steps',view:'steps_text',text:'Steps',readonly:false,required:false,type:'text'},
   ]
-
+  
   const fieldHeaders = [
     {
-      selector:'table',code:'field',text:'Field',readonly:false,required:true,type:'domain'
+      selector:'table',code:'index',text:'Index',readonly:false,required:true,type:'number'
     },
     {
-      selector:'table',code:'field_locs',text:'Location',readonly:false,required:true,type:'domain',
-      options:[{value:'row',text:'row'},{value:'detail',text:'detail'}]
+      selector:'table',code:'code',text:'Code',readonly:false,required:true,type:'text'
     },
     {
-      selector:'table',code:'instance',text:'Instance',readonly:false,required:true,type:'domain',
-      options:[{value:'single',text:'single'},{value:'multiple',text:'multiple'}]
+      selector:'table',code:'text',text:'Text',readonly:false,required:true,type:'text'
     },
     {
-      selector:'table',code:'required',text:'Required',readonly:false,required:true,type:'domain',
+      selector:'table',code:'skipable',text:'Skipable',readonly:false,required:true,type:'domain',
       options:getOptionDomain('bool')
     },
+    {
+      selector:'table',code:'approver',view:'approver_text',text:'Approver',readonly:false,required:true,type:'text'
+    },
   ]
-
-  function getWindowData(){
-    return window_categories.filter(x=> x.window == windowWindow).map(x=> {
-      var approval = deepCopy(approval_rules).filter(y=> y.code == x.approval)[0]
-      x.approval_text =  approval?approval.text:''
-      x.fields = deepCopy(window_fields).filter(y=> y.category == x.code)
-      x.fields_text = x.fields.map(x=> {return `${x.field} [${x.field_locs}]`}).join('<br>')
+ 
+  function getApprovalData(){
+    return approval_rules.map(x=> {
+      x.steps = deepCopy(approval_steps).filter(y=> y.rule == x.code).map(x=>{
+        return x
+      })
+      x.steps_text = x.steps.map(x=> {return `${x.text}<br><span class="mr-5"></span>${x.approver??[]} `}).join('<br>')
       return x
     })
   }
 
-  function refreshTableWindows(){    
-    windowWindow = $('#optWindowWindows').val();
-    var table = $('#tableWindows');
+  function refreshTableApprovals(){    
+    var table = $('#tableApprovals');
     var trHead = table.find('thead tr');
     trHead.empty();
     headers.map(header => {
@@ -110,28 +96,23 @@
     var tbody = table.find('tbody');
     tbody.empty();
 
-    getWindowData().map(data=>{
+    getApprovalData().map(data=>{
       var strTr = [`<tr>`];
       var status
       headers.forEach(header => {  
         strTr.push(`<td>${data[header.view??header.code] ?? ''}</td>`);     
       });
-      strTr.push(`<td><a href="#" class="mx-2" onclick="updateWindow('${data.code}')">Edit</a></td>`)
+      strTr.push(`<td><a href="#" class="mx-2" onclick="updateApproval('${data.code}')">Edit</a></td>`)
       strTr.push('</tr>');
       tbody.append(strTr.join(''));
     })
-
-    fieldHeaders.filter(x=> x.code == 'field')[0].options =
-      deepCopy(variables).filter(x=> ['partybuyer', 'partyseller'].includes(x.category) || (x.category === 'contract' && windowWindow === 'contracts') ).map(x=>{
-          return {value:x.code,text:x.code}
-      })
   }
 
-  function updateWindow(code=''){
+  function updateApproval(code=''){
     var html = [];
     html.push('<div>');
     html.push('<div class="rowFields">');      
-    if(code)var rowData = getWindowData().filter(x=> x.code == code)[0];  
+    if(code)var rowData = getApprovalData().filter(x=> x.code == code)[0];  
     deepCopy(headers).filter(x=> x.row==true).map(header=>{
       if(header.code=='approval'){
         header.options = approval_rules.map(x=>{
@@ -148,30 +129,29 @@
     fieldHeaders.map(header=>{
       html.push(`<th>${header.text}</th>`); 
     })
-    html.push(`<td><a href="#" class="mx-2" onclick="addWindowDetailRow(this)">Add</a></td>`); 
+    html.push(`<td><a href="#" class="mx-2" onclick="addApprovalDetailRow(this)">Add</a></td>`); 
     html.push('</tr>');  
-    if(rowData)rowData.fields.map(row=>{html.push(windowDetailRow(code,row))})
+    xx = rowData
+    if(rowData)rowData.steps.map(row=>{html.push(approvalDetailRow(code,row))})
     html.push('</table>');  
     html.push('</div>');  
     html.push('</div>');
-    html.push(`<button type="button" class="btn btn-primary" onclick="saveWindow('${code}')">Save</button>`)
-    modal = modalShow((code?'New':'Update') + ' Window',html.join(''))
-  }
-  
-  function addWindowDetailRow(ctrl,code){
-    $(ctrl.closest('tbody')).append(windowDetailRow(code))
+    html.push(`<button type="button" class="btn btn-primary" onclick="saveApproval('${code}')">Save</button>`)
+    modal = modalShow((code?'New':'Update') + ' Approval',html.join(''))
   }
 
-  function removeWindowDetailRow(ctrl,code){  
+  function addApprovalDetailRow(ctrl,code){
+    $(ctrl.closest('tbody')).append(approvalDetailRow(code))
+  }
+
+  function removeApprovalDetailRow(ctrl,code){  
     var confirmation = confirm("Are you sure you want to remove this entry?");
     if (confirmation) { 
       $(ctrl.closest('tr')).remove()
     }
   }
 
-  function windowDetailRow(code,row=''){
-    console.log(code)
-    console.log(row)
+  function approvalDetailRow(code,row=''){
     var html = []
     html.push('<tr class="extRow">');  
     deepCopy(fieldHeaders).map(header=>{
@@ -183,9 +163,9 @@
     return html.join('')
   }
 
-  function saveWindow(code=""){
+  function saveApproval(code=""){
     var errFields = []
-    var newData = {window:windowWindow}
+    var newData = {}
     $.each(modal.find('.rowFields .form-control'),function(i,v){
       var field = $(v).attr('val');
       newData[field]=$(v).val()
@@ -195,7 +175,7 @@
     })
     var newFieldData = []
     $.each(modal.find('.extRow'),function(i,row){
-      var newFieldRow ={category:newData.code}
+      var newFieldRow ={rule:newData.code}
       $.each($(row).find('.form-control'),function(j,ctrl){
         var field = $(ctrl).attr('val');
         newFieldRow[field]=$(ctrl).val()
@@ -212,22 +192,21 @@
     }
 
     if(code){
-      var data = window_categories.filter(x=> x.code == code)[0]
+      var data = approval_rules.filter(x=> x.code == code)[0]
       Object.assign(data, newData);      
     }else{
-      window_categories.push(newData)
+      approval_rules.push(newData)
     }  
    
-    window_fields = window_fields.filter(x => x.category !== newData.code);
+    approval_steps = approval_steps.filter(x => x.rule !== newData.code);
     newFieldData.map(x=>{
-      window_fields.push(x)
+      approval_steps.push(x)
     })
 
     modal.modal('hide')
-    refreshTableWindows()
+    refreshTableApprovals()
   }
-
-  refreshTableWindows()
+  refreshTableApprovals()
  
 </script>
 
