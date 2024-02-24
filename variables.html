@@ -83,13 +83,14 @@
     {row:false,selector:'form',code:'unit',text:'Unit',readonly:false,required:false,type:'text'},
     {row:false,selector:'form',code:'rounding',view:'rounding_text',text:'Rounding Rule',readonly:false,required:false,type:'domain'},
     {row:false,selector:'form',code:'domain_values',text:'Domain Values',readonly:false,required:true,type:'text'},
+    {row:false,selector:'form',code:'reffields',text:'Reference Fields',readonly:false,required:true,type:'text'},
   ]
 
   function getVariableData(){
     return variables.filter(x=> x.category == variableCategory).map(x=> {
       var rule = deepCopy(rounding_rules).filter(y=> y.code = x.rounding)[0]
-      x.rounding_text =  rule?rule.text:'',
-      x.domain_values = variable_domain_codes.filter(y=> y.variable == x.code).map(x=> {return x.code}).join('<br>')
+      x.rounding_text =  rule?rule.text:''
+      x.domain_values = variable_domain_codes.filter(y=> y.variable == x.code).map(x=> {return x.code})
       return x
     })
   }
@@ -160,10 +161,17 @@
           break
         case 'domain':  
           var header = deepCopy(headers.filter(x=> x.code=='domain_values')[0])
+          xx = data
           if(data)header.value = data.domain_values.join()
           html.push(htmlControl(header,false))
           break
         default:
+    }
+
+    if(variableCategory=='dynamic'){
+      var headerRefFields = deepCopy(headers.filter(x=> x.code=='reffields')[0])
+      if(data)headerRefFields.value = data.reffields
+      html.push(htmlControl(headerRefFields,false))
     }
     return html.join('');
   }
@@ -190,6 +198,7 @@
       alert('Required fields: \n• ' + errFields.join("\n• "));
       return
     }
+    newData.reffields = newData.reffields.split()
     if(code){
       var data = variables.filter(x=> x.code == code)[0]
       Object.assign(data, newData);      

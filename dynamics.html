@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <title>Parties</title>
+  <title>Dynamics</title>
   <style>   
     .form-group.row{
       max-width: 800px;
@@ -15,18 +15,18 @@
 <body>  
   <div id="container" class="container mt-4">
   <div>
-    <h2>Parties</h2>      
+    <h2>Dynamics</h2>      
     <div class="form-row my-2">
       <div class="form-group">
-        <select class="form-control" id="optPartyCategories" onchange="refreshPartyTable()"></select>
+        <select class="form-control" id="optDynamicCategories" onchange="refreshDynamicTable()"></select>
       </div>
       <div class="mx-auto"></div>        
       <div>
-        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateParty()">Add New</button>
+        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateDynamic()">Add New</button>
       </div>
     </div>
 
-    <table class="table table-bordered" id="tableParties">
+    <table class="table table-bordered" id="tableDynamics">
       <thead>
         <tr></tr>
       </thead>
@@ -51,36 +51,31 @@
 
 <script>
 
-  var partyCategory = ''
+  var dynamicCategory = ''
 
-  function partyRowButtons (arg,status){
+  function dynamicRowButtons (arg,status){
     var btns = []
-    if(status!='submitted')btns.push(`<a href="#" class="mx-2" onclick='updateParty(${arg})'>Edit</a>`)
-    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick='submitParty(${arg})'>Submit</a>`)
-    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick='approveParty(${arg})'>Approve</a>`)
-    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick='returnParty(${arg})'>Return</a>`)
-    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick='cancelParty(${arg})'>Cancel</a>`)
-    btns.push(`<a href="#" class="mx-2" onclick='showPartyHistory(${arg})'>History</a>`)
+    if(status!='submitted')btns.push(`<a href="#" class="mx-2" onclick='updateDynamic(${arg})'>Edit</a>`)
+    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick='submitDynamic(${arg})'>Submit</a>`)
+    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick='approveDynamic(${arg})'>Approve</a>`)
+    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick='returnDynamic(${arg})'>Return</a>`)
+    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick='cancelDynamic(${arg})'>Cancel</a>`)
+    btns.push(`<a href="#" class="mx-2" onclick='showDynamicHistory(${arg})'>History</a>`)
     return btns.join('')
   }
 
-  function optPartyCategories(){
-    var opt =$('#optPartyCategories')
+  function optDynamicCategories(){
+    var opt =$('#optDynamicCategories')
     opt.empty()   
-    window_categories.filter(x=> x.window == 'parties' ).map(x=>{
+    window_categories.filter(x=> x.window == 'dynamics' ).map(x=>{
       opt.append(`<option value='${x.code}'>${x.text}</option>`)
     })
   }
-  optPartyCategories()
+  optDynamicCategories()
 
-  const defaultHeader = [
-    {field_locs:'row',code:'owned',type:'domain',text:'Owned',required:true,editable:false,options:getOptionDomain('bool')},
-    {field_locs:'row',code:'code',type:'text',text:'Code',required:true,editable:false},
-    {field_locs:'row',code:'name',type:'text',text:'Name',required:true,editable:true},
-  ]
-  var partyRowHeaders = []
-  var partyDetailHeaders = []
-  var partySplitfields
+  var dynamicRowHeaders = []
+  var dynamicDetailHeaders = []
+  var dynamicSplitfields
   const endHeaders = [
     {code:'status',text:'Status'},
     {code:'sub_status',text:'Sub Status',view:'sub_status_text'},
@@ -89,18 +84,18 @@
     {code:'update_time',text:'Update Time'},
   ]
 
-  function getLatestPartyData(final=false){ 
+  function getLatestDynamicData(final=false){ 
     const checkStatus = (status) => final ? status === 'approved' : status !== 'canceled';
 
     var query = deepCopy(window_update_trans)
-    .filter(x=> checkStatus(getLast(x.status).status) && x.window == 'parties')
+    .filter(x=> checkStatus(getLast(x.status).status) && x.window == 'dynamics')
     .map(tran=>{
       var splitField = window_fields.filter(field=> field.category == tran.category && field.field_locs=='row').map(field=>field.field)
       tran.splitKey = getSplitKey(tran.splits??[],splitField)
       //pivot split field 
       tran.splits.map(split=>{
         var field = split.field
-        if(partySplitfields.includes(field))tran[split.field] = split.value
+        if(dynamicSplitfields.includes(field))tran[split.field] = split.value
       }) 
       //get last status of the transaction
       tran.statuslog = tran.status
@@ -114,26 +109,26 @@
     return getGroupLast(query,['category','splitKey'])
   }
 
-  function refreshPartyTable(){    
-    partyCategory = $('#optPartyCategories').val();
-    var table = $('#tableParties');
+  function refreshDynamicTable(){    
+    dynamicCategory = $('#optDynamicCategories').val();
+    var table = $('#tableDynamics');
     var trHead = table.find('thead tr');
     trHead.empty();    
-    partyRowHeaders = defaultHeader
-    partyDetailHeaders = []
+    dynamicRowHeaders = []
+    dynamicDetailHeaders = []
 
     //get fields for the category
-    deepCopy(window_fields).filter(x=> x.category ==partyCategory).map(x=>{
+    deepCopy(window_fields).filter(x=> x.category ==dynamicCategory).map(x=>{
       var variable = deepCopy(variables).filter(y=> y.code == x.field)[0]
       variable.selector = x.field_locs=='row'?'form':'table'
       variable.readonly = x.field_locs=='row'
-      if(x.field_locs=='row')partyRowHeaders.push(variable)
-      if(x.field_locs=='detail')partyDetailHeaders.push(variable)
+      if(x.field_locs=='row')dynamicRowHeaders.push(variable)
+      if(x.field_locs=='detail')dynamicDetailHeaders.push(variable)
     })
-    partySplitfields = partyRowHeaders.map(x=> x.code)
+    dynamicSplitfields = dynamicRowHeaders.map(x=> x.code)
   
     //add headers to table
-    var rowHeaders = [...partyRowHeaders,...endHeaders]    
+    var rowHeaders = [...dynamicRowHeaders,...endHeaders]    
     rowHeaders.map(header => {
       trHead.append(`<th>${header.text}</th>`);
     });
@@ -142,18 +137,18 @@
     //add data
     var tbody = table.find('tbody');
     tbody.empty();    
-    getLatestPartyData().filter(x=> x.category == partyCategory).map(data=>{
+    getLatestDynamicData().filter(x=> x.category == dynamicCategory).map(data=>{
       var strTr = [`<tr>`];
       rowHeaders.map(header => {  
         strTr.push(`<td>${data[header.view??header.code]??''}</td>`);   
       });      
-      strTr.push(`<td>${partyRowButtons(JSON.stringify(data),data.status)}</td>`)
+      strTr.push(`<td>${dynamicRowButtons(JSON.stringify(data),data.status)}</td>`)
       strTr.push('</tr>');
       tbody.append(strTr.join(''));
     })
   }
 
-  function updateParty(item=''){
+  function updateDynamic(item=''){
     xx = item
     var update = item!='';
     var html = [];
@@ -161,7 +156,7 @@
     html.push('<div class="rowFields">'); 
     //Row controls
     var rowHeaders = []
-    deepCopy(partyRowHeaders).map(header=>{
+    deepCopy(dynamicRowHeaders).map(header=>{
       if(update)header.value = item.splits.filter(x=> x.field == "period")[0].value
       if(header.type=='domain')header.options = getOptionDomain(header.code)
       header.required = true
@@ -171,12 +166,12 @@
     html.push('</div>');  
     //Details Controls
     html.push('<div class="extFields">'); 
-    deepCopy(partyDetailHeaders).filter(x=> x.category == 'party').map(header=>{
+    deepCopy(dynamicDetailHeaders).filter(x=> x.category == 'dynamic').map(header=>{
       var variable = getVariable(header.code)
       html.push(`<table class="table table-bordered detailtable" val='${variable.code}'>`); 
       var htmlHeaderTemp = []
       var htmlRowTemp = []
-      var detailFields =  variable.reffields.filter(x=> !partyRowHeaders.map(y=>{return y.code}).includes(x) ) 
+      var detailFields =  variable.reffields.filter(x=> !dynamicRowHeaders.map(y=>{return y.code}).includes(x) ) 
       //header
       detailFields.map(reffield=>{
         var refVariable = getVariable(reffield)
@@ -184,13 +179,13 @@
         htmlHeaderTemp.push(`<th>${reffield}</th>`)
         htmlRowTemp.push(`<td>${htmlControl(refVariable,update)}</td>`)
       })      
-      html.push(`<tr>${htmlHeaderTemp}<th>${header.text}</th><td><a href="#" class="mx-2" onclick='updatePartyAddDetailRow(this,${JSON.stringify(variable)},${JSON.stringify(detailFields)})'>Add</a></td></tr>`)       
+      html.push(`<tr>${htmlHeaderTemp}<th>${header.text}</th><td><a href="#" class="mx-2" onclick='updateDynamicAddDetailRow(this,${JSON.stringify(variable)},${JSON.stringify(detailFields)})'>Add</a></td></tr>`)       
       //rows
       if(update){
         var dataFields = item.fields.filter(x=> x.field == header.code)[0]??{data:[]}        
         dataFields.data.map(refdata=>{
           refdata.variable = variable
-          html.push(updatePartyDetailRow(variable,detailFields,refdata))
+          html.push(updateDynamicDetailRow(variable,detailFields,refdata))
         })        
       }
       rowHeaders.push(header.code)
@@ -198,11 +193,11 @@
     }) 
     html.push('</div>');  
     html.push('</div>');
-    html.push(`<button type="button" class="btn btn-primary" onclick="saveParty(this,${update})">Save</button>`)
-    modal = modalShow(update?'New':'Update' + ' Party',html.join(''))
+    html.push(`<button type="button" class="btn btn-primary" onclick="saveDynamic(this,${update})">Save</button>`)
+    modal = modalShow(update?'New':'Update' + ' Dynamic',html.join(''))
   }
 
-  function updatePartyDetailRow(variable,detailFields,refdata=''){
+  function updateDynamicDetailRow(variable,detailFields,refdata=''){
     var html =[]
     var update = refdata!=''
     html.push(`<tr class='detailrow'>`)
@@ -218,43 +213,43 @@
     if(update)variable.value = refdata.value
     html.push(`<td>${htmlControl(variable,update)}</td>`)
     //button
-    html.push(`<td><a href="#" class="mx-2" onclick="updatePartyRemoveDetailRow(this)">Remove</a></td>`)       
+    html.push(`<td><a href="#" class="mx-2" onclick="updateDynamicRemoveDetailRow(this)">Remove</a></td>`)       
     html.push(`</tr>`)
     return html.join('')
   }
 
-  function updatePartyAddDetailRow(ctrl,variable,detailFields){
-    $(ctrl.closest('tbody')).append(updatePartyDetailRow(variable,detailFields))
+  function updateDynamicAddDetailRow(ctrl,variable,detailFields){
+    $(ctrl.closest('tbody')).append(updateDynamicDetailRow(variable,detailFields))
   }
 
-  function updatePartyRemoveDetailRow(ctrl){
+  function updateDynamicRemoveDetailRow(ctrl){
     $(ctrl.closest('tr')).empty()
   }
 
-  function newPartyData(){
+  function newDynamicData(){
     return {
-      window:'parties',
-      category:partyCategory,
+      window:'dynamics',
+      category:dynamicCategory,
       splits:[],
       status:[{status:'draft',sub_status:'',update_by:getUser(),update_time:getCurrentTime(),remarks:''},],
       fields: []
     }
   }
 
-  function getPartyLatestTransItem(item){
-    return getLast(getPartyTransItem(item))
+  function getDynamicLatestTransItem(item){
+    return getLast(getDynamicTransItem(item))
   }
 
-  function getPartyTransItem(item){
-    return window_update_trans.filter(x=> x.category == partyCategory 
+  function getDynamicTransItem(item){
+    return window_update_trans.filter(x=> x.category == dynamicCategory 
       && getLast(x.status).status!='canceled' 
-      & getSplitKey(x.splits,partySplitfields) == getSplitKey(item.splits,partySplitfields))
+      & getSplitKey(x.splits,dynamicSplitfields) == getSplitKey(item.splits,dynamicSplitfields))
   }
 
-  function hasOnProccessPartyVariable(variable,splitFields){   
+  function hasOnProccessDynamicVariable(variable,splitFields){   
     var keyVal = getSplitKey(splitFields,variable.reffields) 
     var splits = []
-    getLatestPartyData().filter(x=>x.status == 'submitted' && x.category!= partyCategory).map(tran=>{
+    getLatestDynamicData().filter(x=>x.status == 'submitted' && x.category!= dynamicCategory).map(tran=>{
       tran.fields.filter(x=> x.field == variable.code).map(field=>{
         field.data.map(data=>{
           var onProcKeyVal = getSplitKey([...(tran.splits??[]), ...data.reffields??[]],variable.reffields)
@@ -265,9 +260,9 @@
     return splits      
   }
 
-  function saveParty(ctrl,update){
+  function saveDynamic(ctrl,update){
     var errFields = []
-    var newData = newPartyData()
+    var newData = newDynamicData()
     var modalBody = $(ctrl).closest('.modal-body') 
 
     //required validation  
@@ -331,7 +326,7 @@
     newData.fields.map(dataField=>{      
       var variable = getVariable(dataField.field)
       dataField.data.map(data=>{
-        errFields = hasOnProccessPartyVariable(variable,[...(newData.splits??[]), ...data.reffields??[]])
+        errFields = hasOnProccessDynamicVariable(variable,[...(newData.splits??[]), ...data.reffields??[]])
       })
     })
     if (errFields.length>0){
@@ -340,7 +335,7 @@
     }
     
     //previous transaction  exist warning
-    var lastTrans = getPartyLatestTransItem(newData)
+    var lastTrans = getDynamicLatestTransItem(newData)
     if(!update&&lastTrans){
       var confirmation = confirm(`Split fields already exist. Continuing will update the existing record.`);
       if (!confirmation) return
@@ -365,16 +360,16 @@
     }
 
     modal.modal('hide')
-    refreshPartyTable()
+    refreshDynamicTable()
     return
   }
     
-  function submitParty(item){    
+  function submitDynamic(item){    
     var remarks = showPromptRemarks(true);
     if(remarks.ok){
 
-      var trans = getPartyLatestTransItem(item)
-      var approvalrule = window_categories.filter(x=> x.code == partyCategory)[0].approval
+      var trans = getDynamicLatestTransItem(item)
+      var approvalrule = window_categories.filter(x=> x.code == dynamicCategory)[0].approval
       var step = approval_steps.filter(x=> x.rule==approvalrule)[0].code
       latestStatus = getLast(trans.status)
       var newStatus = {status:'submitted',sub_status:step, update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text}
@@ -383,44 +378,44 @@
       } else{
         trans.status.push(newStatus)
       }
-      refreshPartyTable()
+      refreshDynamicTable()
     }
   }
      
-  function approveParty(item){    
+  function approveDynamic(item){    
     var remarks = showPromptRemarks(false);
     if(remarks.ok){
-      var trans = getPartyLatestTransItem(item)
+      var trans = getDynamicLatestTransItem(item)
       var step = $(trans.status).last().get(0).sub_status
-      var approvalrule = window_categories.filter(x=> x.code == partyCategory)[0].approval
+      var approvalrule = window_categories.filter(x=> x.code == dynamicCategory)[0].approval
       var stepindex = approval_steps.filter(x=> x.rule==approvalrule && x.code == step)[0].index
       var newStep = approval_steps.filter(x=> x.rule==approvalrule && x.index >stepindex)[0]
       trans.status.push({status:newStep?'submitted':'approved',sub_status:newStep?newStep.code:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text})
-      refreshPartyTable()
+      refreshDynamicTable()
     }
   } 
      
-  function returnParty(item){    
+  function returnDynamic(item){    
     var remarks = showPromptRemarks(true);
     if(remarks.ok){
-      var trans = getPartyLatestTransItem(item)
+      var trans = getDynamicLatestTransItem(item)
       trans.status.push({status:'returned',sub_status:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text})
-      refreshPartyTable()
+      refreshDynamicTable()
     }
   } 
      
-  function cancelParty(item){    
+  function cancelDynamic(item){    
     var remarks = showPromptRemarks(true);
     if(remarks.ok){
-      var trans = getPartyLatestTransItem(item)
+      var trans = getDynamicLatestTransItem(item)
       trans.status.push({status:'canceled',sub_status:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text})
-      refreshPartyTable()
+      refreshDynamicTable()
     }
   } 
   
-  function showPartyHistory(item){
+  function showDynamicHistory(item){
     var html = []
-    var trans = getPartyTransItem(item)
+    var trans = getDynamicTransItem(item)
     var prevFields = null
     
     var prevVals = {}
@@ -477,7 +472,7 @@
     modal = modalShow(`Change History`,html.join(''))
   }
 
-  refreshPartyTable()
+  refreshDynamicTable()
  
 </script>
 

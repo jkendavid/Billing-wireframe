@@ -58,7 +58,7 @@
     opt.empty()   
     opt.append(`<option value='parties'>Parties</option>`)
     opt.append(`<option value='contracts'>Contracts</option>`)
-    opt.append(`<option value='dynamic'>Dynamic</option>`)
+    opt.append(`<option value='dynamics'>Dynamics</option>`)
   }
   optWindowWindows()
   
@@ -71,11 +71,11 @@
 
   const fieldHeaders = [
     {
-      selector:'table',code:'field',text:'Field',readonly:false,required:true,type:'domain'
-    },
-    {
       selector:'table',code:'field_locs',text:'Location',readonly:false,required:true,type:'domain',
       options:[{value:'row',text:'row'},{value:'detail',text:'detail'}]
+    },
+    {
+      selector:'table',code:'field',text:'Field',readonly:false,required:true,type:'domain'
     },
     {
       selector:'table',code:'instance',text:'Instance',readonly:false,required:true,type:'domain',
@@ -122,7 +122,7 @@
     })
 
     fieldHeaders.filter(x=> x.code == 'field')[0].options =
-      deepCopy(variables).filter(x=> ['partybuyer', 'partyseller'].includes(x.category) || (x.category === 'contract' && windowWindow === 'contracts') ).map(x=>{
+      deepCopy(variables).filter(x=> ['partybuyer', 'partyseller'].includes(x.category) || (x.category === 'contract' && windowWindow === 'contracts') || ( ['system', 'dynamic'].includes(x.category) && windowWindow === 'dynamics') ).map(x=>{
           return {value:x.code,text:x.code}
       })
   }

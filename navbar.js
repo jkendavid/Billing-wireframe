@@ -14,6 +14,7 @@ $('body').prepend(
               <div class="dropdown-menu" aria-labelledby="servicesDropdown">
                 <a class="dropdown-item" href="parties.html">Parties</a>
                 <a class="dropdown-item" href="contracts.html">Contracts</a>
+                <a class="dropdown-item" href="dynamics.html">Dynamics</a>
               </div>
           </li>
           <li class="nav-item dropdown">

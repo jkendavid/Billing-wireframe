@@ -9,6 +9,8 @@ var window_categories =[
     {window:'contracts',code:'PSA_COAL', text:'PSA Coal', approval:'ONESTEP'},
     {window:'contracts',code:'PSA_SOLAR', text:'PSA Solar', approval:'ONESTEP'},
     {window:'contracts',code:'RSC', text:'Retail supply Contract', approval:'ONESTEP'},
+    {window:'dynamics',code:'INDEX', text:'Monthly Index', approval:'THREESTEP'},
+    {window:'dynamics',code:'PLANT', text:'Monthly Plant Data', approval:'ONESTEP'},
 ]
 
 var approval_rules = [
@@ -68,6 +70,11 @@ var variables = [
     {category:'contract',code:'er194r',type:'number',text:'ER-194 Rate',description:'',active:'active',rounding:'rate',unit:'Php/kWh'},
     {category:'contract',code:'forexb',type:'number',text:'FOREX base',description:'',active:'active',rounding:'index',unit:''},
     {category:'contract',code:'ncrcpib',type:'number',text:'NCR CPI base',description:'',active:'active',rounding:'index',unit:''},
+    {category:'dynamic',reffields:['period'],code:'forex',type:'number',text:'FOREX',description:'',active:'active',rounding:'index',unit:''},
+    {category:'dynamic',reffields:['period'],code:'ncrcpi',type:'number',text:'NCR CPI',description:'',active:'active',rounding:'index',unit:''},
+    {category:'dynamic',reffields:['period','plant_sources'],code:'pmq',type:'number',text:'Metered Quantity',description:'',active:'active',rounding:'index',unit:'kWh'},
+    {category:'dynamic',reffields:['period','plant_sources'],code:'coalmt',type:'number',text:'Coal Consumption',description:'',active:'active',rounding:'index',unit:'MT'},
+    {category:'dynamic',reffields:['period','plant_sources'],code:'coalcost',type:'number',text:'Delivered Coal Price',description:'',active:'active',rounding:'index',unit:'Php'},
 ]
 
 var variable_domain_codes = [
@@ -137,6 +144,14 @@ var window_fields = [
     {field:'er194r',category:'PSA_COAL',field_locs:'detail' ,instance:'single',required:true},
     {field:'forexb',category:'PSA_COAL',field_locs:'detail' ,instance:'single',required:true},
     {field:'ncrcpib',category:'PSA_COAL',field_locs:'detail' ,instance:'single',required:true},
+    {field:'period',category:'INDEX',field_locs:'row' ,instance:'single',required:true},
+    {field:'ncrcpi',category:'INDEX',field_locs:'detail' ,instance:'single',required:true},
+    {field:'forex',category:'INDEX',field_locs:'detail' ,instance:'single',required:true},
+    {field:'period',category:'PLANT',field_locs:'row' ,instance:'single',required:true},
+    {field:'plant_sources',category:'PLANT',field_locs:'detail' ,instance:'single',required:true},
+    {field:'pmq',category:'PLANT',field_locs:'detail' ,instance:'single',required:true},
+    {field:'coalmt',category:'PLANT',field_locs:'detail' ,instance:'single',required:true},
+    {field:'coalcost',category:'PLANT',field_locs:'detail' ,instance:'single',required:true},
 ]
 
 var parties = [
@@ -156,60 +171,110 @@ var contracts = [
 
 window_update_trans = [
     {window:'parties',party:'GEN01',
-    status:[
-        {status:'submitted',sub_status:'THREESTEPFIRST',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
-        {status:'submitted',sub_status:'THREESTEPFINAL',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
-        {status:'approved',sub_status:'',update_by:'MKTGMNGR',update_time:'2023-01-01 00:00',remarks:''},
-    ],
-    fields: [
-        {field:'name',data:[
-            {period_start:'',period_end:'',index:-1,value:'Generator 12'}
-        ]},
-        {field:'seller_addr',data:[
-            {period_start:'',period_end:'',index:-1,value:'Gen 1 Address 1'}
-        ]},
-        {field:'seller_tin',data:[
-            {period_start:'',period_end:'',index:-1,value:'000-000-0001'}
-        ]},
-        {field:'seller_wesm_bid',data:[
-            {period_start:'',period_end:'',index:1,value:'GEN01'}
-        ]},
-        {field:'plant_sources',data:[
-            {period_start:'2023-01',period_end:'2023-12',index:1,value:'PLANT01'},
-            {period_start:'2024-01',period_end:'2024-12',index:2,value:'PLANT02'},
-        ]},
-    ]},
+        status:[
+            {status:'submitted',sub_status:'THREESTEPFIRST',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
+            {status:'submitted',sub_status:'THREESTEPFINAL',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
+            {status:'approved',sub_status:'',update_by:'MKTGMNGR',update_time:'2023-01-01 00:00',remarks:''},
+        ],
+        fields: [
+            {field:'name',data:[
+                {period_start:'',period_end:'',index:-1,value:'Generator 12'}
+            ]},
+            {field:'seller_addr',data:[
+                {period_start:'',period_end:'',index:-1,value:'Gen 1 Address 1'}
+            ]},
+            {field:'seller_tin',data:[
+                {period_start:'',period_end:'',index:-1,value:'000-000-0001'}
+            ]},
+            {field:'seller_wesm_bid',data:[
+                {period_start:'',period_end:'',index:1,value:'GEN01',reffields:[{field:'index',value:1}]}
+            ]},
+            {field:'plant_sources',data:[
+                {value:'PLANT01',
+                reffields:[
+                    {field:'period_start',value:'2023-01'},
+                    {field:'period_end',value:'2023-12'},
+                    {field:'index',value:1}
+                ]},
+                {value:'PLANT02',
+                reffields:[
+                    {field:'period_start',value:'2024-01'},
+                    {field:'period_end',value:'2024-12'},
+                    {field:'index',value:1}
+                ]},
+            ]},
+        ]},    
     {window:'parties',party:'GEN02',
-    status:[
-        {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
-    ],
-    fields: [
-        {field:'seller_addr',data:[
-            {period_start:'',period_end:'',index:-1,value:'Gen 2 Address 1'}
+        status:[
+            {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
+        ],
+        fields: [
+            {field:'seller_addr',data:[
+                {period_start:'',period_end:'',index:-1,value:'Gen 2 Address 1'}
+            ]},
+            {field:'seller_tin',data:[
+                {period_start:'',period_end:'',index:-1,value:'000-000-0002'}
+            ]},
+            {field:'seller_wesm_bid',data:[
+                {period_start:'',period_end:'',index:1,value:'GEN02'}
+            ]},
         ]},
-        {field:'seller_tin',data:[
-            {period_start:'',period_end:'',index:-1,value:'000-000-0002'}
-        ]},
-        {field:'seller_wesm_bid',data:[
-            {period_start:'',period_end:'',index:1,value:'GEN02'}
-        ]},
-    ]},
     {window:'contracts',contract:'PSA-GEN01-00001',
-    status:[
-        {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
-    ],
-    fields: [
-        {field:'plant_sources',data:[
-            {period_start:'',period_end:'',index:-1,value:'PLANT01'}
+        status:[
+            {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
+        ],
+        fields: [
+            {field:'plant_sources',data:[
+                {period_start:'',period_end:'',index:-1,value:'PLANT01'}
+            ]},
+            {field:'period_start',data:[
+                {period_start:'',period_end:'',index:-1,value:'2023-01'}
+            ]},
+            {field:'period_end',data:[
+                {period_end:'',period_end:'',index:-1,value:'2024-02'}
+            ]},
         ]},
-        {field:'period_start',data:[
-            {period_start:'',period_end:'',index:-1,value:'2023-01'}
+    {window:'dynamics',category:'INDEX',splits:[
+            {field:'period',value:'2024-01'}
+        ],
+        status:[
+            {status:'submitted',sub_status:'THREESTEPFINAL',update_by:'MKTG',update_time:'2022-12-01 00:00',remarks:''},
+            {status:'approved',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
+        ],
+        fields: [
+            {field:'forex',data:[
+                {value:'60'}
+            ]},
         ]},
-        {field:'period_end',data:[
-            {period_end:'',period_end:'',index:-1,value:'2024-02'}
+    {window:'dynamics',category:'INDEX',splits:[
+            {field:'period',value:'2024-01'}
+        ],
+        status:[
+            {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-02-02 00:00',remarks:''},
+        ],
+        fields: [
+            {field:'forex',data:[
+                {value:'60'}
+            ]},
+            {field:'ncrcpi',data:[
+                {value:'3.4'}
+            ]},
         ]},
-    ]},
+    {window:'dynamics',category:'PLANT',
+        splits:[
+            {field:'period',value:'2024-01'}
+        ],
+        status:[
+            {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
+        ],
+        fields: [
+            {field:'pmq',data:[
+                {reffields:[{field:'plant_sources',value:'PLANT01'}],value:60000},
+                {reffields:[{field:'plant_sources',value:'PLANT02'}],value:90000},
+            ]},
+        ]},
 ]
+
 
 var billing_templates =[
     {code:'TEMPVERSION1',description:'Template Version 1'},

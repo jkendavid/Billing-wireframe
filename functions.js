@@ -37,6 +37,9 @@ function getOptionDomain(variable){
         case 'seller':
             parties.forEach(x => options.push({value:x.code,text:x.code}));
             break;
+        case 'contract':
+            contracts.forEach(x => options.push({value:x.code,text:x.code}));
+            break;
         case 'billing_template':
             billing_templates.forEach(x => options.push({value:x.code,text:x.code}));
             break;
@@ -110,6 +113,8 @@ function htmlControl(obj,readonly=false){
             return htmlControl_Option(obj,readonly)
         case 'number':
             return htmlControl_Number(obj,readonly)
+        case 'period':
+            return htmlControl_Period(obj,readonly)
         default:
     }
 }
@@ -125,16 +130,21 @@ function htmlControl_Number(obj,readonly=false){
     return htmlControlFormat(obj.selector,`<input ${obj.extension} prevval="${obj.value}" type="number" step="${obj.step}" ${strValue} class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>`,obj.text,obj.required) 
 }
 
+function htmlControl_Period(obj,readonly=false){
+    var strValue = obj.value?`value="${obj.value}"`:''
+    return htmlControlFormat(obj.selector,`<input ${obj.extension} prevval="${obj.value}" type="month" ${strValue} class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>`,obj.text,obj.required) 
+}
+
 
 function htmlControl_Option(obj,readonly=false){
+    x1 = obj
     var htmlOption = []
     htmlOption.push(`<option value=""></option>`);
-    if(obj.options){
-        obj.options.map(option=> {
-            var selected = obj.value==option.value?'selected':''
-            htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
-        })
-    }
+    if(!obj.options)obj.options = getOptionDomain(obj.code)
+    obj.options.map(option=> {
+        var selected = obj.value==option.value?'selected':''
+        htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
+    })  
     return htmlControlFormat(obj.selector,`<select ${obj.extension} class="form-control" prevval="${obj.value}" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''} ${obj.multiple?'multiple':''}>${htmlOption}</select>`,obj.text,obj.required) 
 }
 
@@ -153,7 +163,7 @@ function getCurrentTime() {
 }  
 
 function getLast(obj){
-    return obj[obj.length-1]
+    return obj?obj[obj.length-1]:null
 }
 
 if (typeof JSON === 'undefined') {
@@ -176,13 +186,46 @@ if (typeof JSON === 'undefined') {
     };
 }
 
-
 function deepCopy(obj) {
-return JSON.parse(JSON.stringify(obj));
+    return JSON.parse(JSON.stringify(obj));
 }
 
-function get(obj){
-    return JSON.stringify(obj)
+
+function getVariable(code){
+   return deepCopy(variables).filter(x=> x.code == code)[0]
 }
+
+
+function getGroupLast(data, groupFields) {
+    var latestItems = {};  
+    data.forEach(function (item) {
+      var groupKey = groupFields.map(field => item[field]).join('|');  
+      item.groupKey = groupKey
+      latestItems[groupKey] = item;
+    });  
+    return Object.values(latestItems);
+}
+
+function getSplitKey(split,splitfields){
+    var obj = {}
+    split.map(x=>{obj[x.field] = x.value})
+    return splitfields.map(x => obj[x]).filter(x=> x!='').join('|');       
+}
+
+
+function showPromptRemarks(required=false){
+    var remarks = prompt(`Remarks${required?'*':''}`);
+    if(required&&String(remarks).trim() == "") {
+        alert("Remarks Required")
+        remarks = null
+    }
+    return {ok:remarks!=null, text:remarks};
+}
+
+const hasDuplicates = array => new Set(array).size !== array.length;
 
 var xx
+var x1
+var x2
+var x3
+var x4
