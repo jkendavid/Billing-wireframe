@@ -59,9 +59,10 @@
     opt.append(`<option value='partyseller'>Party Seller</option>`)
     opt.append(`<option value='partybuyer'>Party Buyer</option>`)
     opt.append(`<option value='contract'>Contract</option>`)
-    opt.append(`<option value='charges'>Charges</option>`)
     opt.append(`<option value='dynamic'>Dynamic</option>`)
+    opt.append(`<option value='charges'>Charges</option>`)
     opt.append(`<option value='external'>External</option>`)
+    opt.append(`<option value='external'>System</option>`)
   }
   optVariableCategories()
 
@@ -81,9 +82,12 @@
     {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
     {row:true,selector:'form',code:'description',text:'Description',readonly:false,required:false,type:'text'},
     {row:false,selector:'form',code:'unit',text:'Unit',readonly:false,required:false,type:'text'},
+    {row:false,selector:'form',code:'min',text:'Min',readonly:false,required:false,type:'text'},
+    {row:false,selector:'form',code:'max',text:'Max',readonly:false,required:false,type:'text'},
     {row:false,selector:'form',code:'rounding',view:'rounding_text',text:'Rounding Rule',readonly:false,required:false,type:'domain'},
     {row:false,selector:'form',code:'domain_values',text:'Domain Values',readonly:false,required:true,type:'text'},
     {row:false,selector:'form',code:'reffields',text:'Reference Fields',readonly:false,required:true,type:'text'},
+    {row:false,selector:'form',code:'regex',text:'Regex Validation',readonly:false,required:false,type:'domain'},
   ]
 
   function getVariableData(){
@@ -147,32 +151,27 @@
 
   function variableExtControl(type,data=''){
     var html = [];
+    var fields = []
     switch (type) {
         case 'number':  
-          var headerUnit = deepCopy(headers.filter(x=> x.code=='unit')[0])
-          var headerRounding = deepCopy(headers.filter(x=> x.code=='rounding')[0])
-          if(data)headerUnit.value = data.unit
-          if(data)headerRounding.value = data.rounding
-          html.push(htmlControl(headerUnit,false))
-          headerRounding.options = rounding_rules.map(x=>{
-            return {value:x.code,text:x.text}
-          }) 
-          html.push(htmlControl(headerRounding,false))
+          fields = ['min','max','unit','rounding']
           break
         case 'domain':  
-          var header = deepCopy(headers.filter(x=> x.code=='domain_values')[0])
-          xx = data
-          if(data)header.value = data.domain_values.join()
-          html.push(htmlControl(header,false))
+          fields = ['domain_values']
           break
         default:
+        case 'text':  
+          fields = ['regex']
+          break
     }
+    
+    if(variableCategory=='dynamic')fields.push('reffields')
 
-    if(variableCategory=='dynamic'){
-      var headerRefFields = deepCopy(headers.filter(x=> x.code=='reffields')[0])
-      if(data)headerRefFields.value = data.reffields
-      html.push(htmlControl(headerRefFields,false))
-    }
+    fields.map(field=>{
+      var header = deepCopy(headers.filter(x=> x.code==field)[0])
+      if(data)header.value = data[field]??''            
+      html.push(htmlControl(header,false))
+    })
     return html.join('');
   }
 
@@ -180,6 +179,7 @@
     var errFields = []
     var newData = {category:variableCategory}
     var domainValues = []
+    
     $.each(modal.find('.form-control'),function(i,v){
       var field = $(v).attr('val');      
       if(field!='domain_values'){
@@ -198,7 +198,8 @@
       alert('Required fields: \n• ' + errFields.join("\n• "));
       return
     }
-    newData.reffields = newData.reffields.split()
+
+    if(newData.reffields)newData.reffields = newData.reffields.split()
     if(code){
       var data = variables.filter(x=> x.code == code)[0]
       Object.assign(data, newData);      

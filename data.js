@@ -19,59 +19,47 @@ var approval_rules = [
 ]
 
 var approval_steps = [
-    {rule:'THREESTEP',index:1,code:'THREESTEPFIRST',text:'1st Approval',skipable:false, approver:['MKTG','MKTGMGR']},
-    {rule:'THREESTEP',index:2,code:'THREESTEPSECOND',text:'2nd Approval',skipable:false, approver:['MKTGMGR']},
-    {rule:'THREESTEP',index:3,code:'THREESTEPFINAL',text:'Final Approval',skipable:false, approver:['MKTGMGR']},
-    {rule:'ONESTEP',index:1,code:'ONESTEPFINAL',text:'Final One Step Approval',skipable:false, approver:['MKTG','MKTGMGR']},
+    {rule:'THREESTEP',index:1,code:'THREESTEPFIRST',text:'1st Approval',skipable:'false', approver:['MKTG','MKTGMGR']},
+    {rule:'THREESTEP',index:2,code:'THREESTEPSECOND',text:'2nd Approval',skipable:'false', approver:['MKTGMGR']},
+    {rule:'THREESTEP',index:3,code:'THREESTEPFINAL',text:'Final Approval',skipable:'false', approver:['MKTGMGR']},
+    {rule:'ONESTEP',index:1,code:'ONESTEPFINAL',text:'Final One Step Approval',skipable:'false', approver:['MKTG','MKTGMGR']},
+]
+
+var regex_validations = [
+    {code:'code', pattern:'^[a-zA-Z0-9_/-]+$', text:'Alpha numeric, underscore and dash only'},
+    {code:'tin', pattern:"^\\d{3}-\\d{3}-\\d{3}-\\d{3}$", text:'Format should be ###-###-###-### (ex. 987-654-321-000)'},
 ]
 
 var variables = [
     {category:'system',code:'owned',type:'bool',text:'Owned'},
-    {category:'system',code:'code',type:'text',text:'Code'},
+    {category:'system',code:'code',type:'text',text:'Code',regex:'code'},
     {category:'system',code:'name',type:'text',text:'Name'},
     {category:'system',code:'period_from',type:'period',text:'Period From'},
     {category:'system',code:'period_to',type:'period',text:'Period To'},
-    {category:'system',code:'index',type:'number',text:'Period To'},
+    {category:'system',code:'index',type:'number',text:'Index', min:0, max:99}, 
 
+    {category:'system',code:'contract',type:'domain',text:'Contract'},
+    {category:'system',code:'buyer',type:'domain',text:'Buyer'},
+    {category:'system',code:'seller',type:'domain',text:'Seller'},
+    {category:'system',code:'billing_template',type:'domain',text:'Billing Template'},
 
-    
-    
-    
-    {category:'system',code:'approval',type:'domain',text:'Approval Rule',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'var_type',type:'domain',text:'Type',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'field_locs',type:'domain',text:'Location',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',required:false,code:'description',type:'text',text:'Description',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',required:false,code:'unit',type:'text',text:'Unit',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',required:false,code:'rounding',type:'domain',text:'Rounding',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'name',type:'text',text:'Name',description:'',active:'active',rounding:''},
-     {category:'system',code:'status',type:'text',text:'Status',description:'',active:'active',rounding:''},
-    {category:'system',code:'sub_status',type:'text',text:'Sub Status',description:'',active:'active',rounding:''},
-    {category:'system',code:'active_status',type:'text',text:'Active Status',description:'',active:'active',rounding:''},
-    {category:'system',code:'update_by',type:'text',text:'Update By',description:'',active:'active',rounding:''},
-    {category:'system',code:'update_time',type:'text',text:'Update Time',description:'',active:'active',rounding:''},
-    {category:'system',code:'remarks',type:'text',text:'Remarks',description:'',active:'active',rounding:''},
-    {category:'system',code:'contract',type:'domain',text:'Contract',description:'',active:'active',rounding:''},
-    {category:'system',code:'buyer',type:'domain',text:'Buyer',description:'',active:'active',rounding:''},
-    {category:'system',code:'seller',type:'domain',text:'Seller',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'detail',code:'billing_template',type:'domain',text:'Billing Template',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'period',type:'period',text:'Period',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'period_start',type:'period',text:'Period Start',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'period_end',type:'period',text:'Period End',description:'',active:'active',rounding:''},
-    {category:'system',code:'date',type:'domain',text:'Date',description:'',active:'active',rounding:''},
-    {category:'system',code:'hour',type:'domain',text:'Hour',description:'',active:'active',rounding:''},
-    {category:'system',code:'interval5m',type:'domain',text:'5-minute interval',description:'',active:'active',rounding:''},
-    {category:'system',code:'interval1h',type:'domain',text:'Hourly Interval',description:'',active:'active',rounding:''},
-    {category:'partyseller',code:'seller_addr',type:'text',text:'Seller Address',description:'',active:'active',rounding:''},
-    {category:'partybuyer',code:'buyer_addr',type:'text',text:'Buyer Address',description:'',active:'active',rounding:''},
-    {category:'partyseller',code:'seller_wesm_bid',type:'domain',text:'Seller WESM Billing ID',description:'',active:'active',rounding:''},
-    {category:'partybuyer',code:'buyer_wesm_bid',type:'domain',text:'Buyer WESM Billing ID',description:'',active:'active',rounding:''},
-    {category:'partyseller',code:'seller_tin',type:'text',text:'Seller TIN',description:'',active:'active',rounding:''},
-    {category:'partybuyer',code:'buyer_tin',type:'text',text:'Buyer TIN',description:'',active:'active',rounding:''},
-    {category:'partyseller',code:'plant_sources',type:'domain',text:'Plant Sources',description:'',active:'active',rounding:''},
-    {category:'partybuyer',code:'delivery_sein',type:'domain',text:'Delivery SEIN',description:'',active:'active',rounding:''},
-    {category:'partybuyer',code:'msp',type:'domain',text:'Metering Service Provider',description:'',active:'active',rounding:''},
-    {category:'partybuyer',code:'creditrating',type:'domain',text:'Credit Rating',description:'',active:'active',rounding:''},
-    {category:'contract',code:'cc',type:'number',text:'Contracted Capacity',description:'',active:'active',rounding:'kw',unit:'kW'},
+    {category:'system',code:'period',type:'period',text:'Period'},
+    {category:'system',code:'date',type:'domain',text:'Date'},
+    {category:'system',code:'hour',type:'domain',text:'Hour'},
+    {category:'system',code:'interval5m',type:'domain',text:'5-minute interval'},
+    {category:'system',code:'interval1h',type:'domain',text:'Hourly Interval'},
+
+    {category:'partyseller',code:'seller_addr',type:'text',text:'Seller Address',description:'',active:'active'},
+    {category:'partybuyer',code:'buyer_addr',type:'text',text:'Buyer Address',description:'',active:'active'},
+    {category:'partyseller',code:'seller_wesm_bid',type:'domain',text:'Seller WESM Billing ID',description:'',active:'active'},
+    {category:'partybuyer',code:'buyer_wesm_bid',type:'domain',text:'Buyer WESM Billing ID',description:'',active:'active'},
+    {category:'partyseller',code:'seller_tin',type:'text',text:'Seller TIN',description:'',active:'active',regex:'tin'},
+    {category:'partybuyer',code:'buyer_tin',type:'text',text:'Buyer TIN',description:'',active:'active',regex:'tin'},
+    {category:'partyseller',code:'plant_sources',type:'domain',text:'Plant Sources',description:'',active:'active'},
+    {category:'partybuyer',code:'delivery_sein',type:'domain',text:'Delivery SEIN',description:'',active:'active'},
+    {category:'partybuyer',code:'msp',type:'domain',text:'Metering Service Provider',description:'',active:'active'},
+    {category:'partybuyer',code:'creditrating',type:'domain',text:'Credit Rating',description:'',active:'active'},
+    {category:'contract',code:'cc',type:'number',text:'Contracted Capacity',description:'',active:'active',rounding:'kw',unit:'kW', min:0},
     {category:'contract',code:'crfr',type:'number',text:'Capital Recovery Fee Rate',description:'',active:'active',rounding:'rate',unit:'Php/kW'},
     {category:'contract',code:'fomr',type:'number',text:'Fixed O&M Fee Rate',description:'',active:'active',rounding:'rate',unit:'Php/kW'},
     {category:'contract',code:'vomr',type:'number',text:'Variable O&M Fee Rate',description:'',active:'active',rounding:'rate',unit:'Php/kWh'},
@@ -229,12 +217,6 @@ window_update_trans = [
             ]},
             {field:'plant_sources',data:[
                 {value:'PLANT01'}
-            ]},
-            {field:'period_start',data:[
-                {value:'2023-01'}
-            ]},
-            {field:'period_end',data:[
-                {value:'2024-02'}
             ]},
         ]},
     {window:'dynamics',category:'INDEX',splits:[

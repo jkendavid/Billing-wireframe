@@ -253,17 +253,20 @@
     var newData = newContractData()
     var modalBody = $(ctrl).closest('.modal-body') 
     var contractData = {category:contractCategory}
-    //required validation  
+
     $.each($(modalBody).find('.rowFields .form-control'),function(i,cell){
       var field = $(cell).attr('val');  
       var value = $(cell).val();
       var variable = contractRowHeaders.filter(x=> x.code == field)[0]
-      if(!value&&variable.required){
-        errFields.push(variable.text)
-      }else if(variable.main){
-        contractData[field]=value
-      }else{
-        newData.fields.push({field:field,data:[{value:value}]}) 
+
+      //field validation 
+      var validationResult = fieldValidation(variable,value)
+      if (!validationResult.ok){
+        errFields.push(validationResult.message)
+      } else if (variable.main){
+        contractData[field] = value;
+      }else {
+        newData.fields.push({ field, data: [{ value }] });
       }
     })
     newData.contract = contractData.code
@@ -277,13 +280,14 @@
         $.each($(row).find('.form-control'),function(k,cell){
           var rowfield =  $(cell).attr('val'); 
           var value = $(cell).val(); 
-          if(rowfield==field){
-            if(!value){
-              errFields.push(`${variable.text} [${j}]`)              
-            }else{
-              rowData.value = value
-            }
-          }else if(value){            
+          var rowVariable = getVariable(rowfield) 
+          if(rowfield==field )rowVariable.required = true       
+          var validationResult = fieldValidation(rowVariable,value)
+          if (!validationResult.ok){
+            errFields.push(validationResult.message)
+          } else if (rowfield==field){
+            rowData.value = value
+          }else {
             rowData[rowfield] = value
           }
         })
@@ -291,10 +295,11 @@
       })      
       newData.fields.push(fieldData) 
     })
+    
     if (errFields.length>0){
-      alert('Required fields: \n• ' + errFields.join("\n• "));
+      alert('Error fields: \n• ' + errFields.join("\n• "));
       return
-    }    
+    }     
    
     //contract code exist
     if (!update&&contracts.filter(x=> x.code == newData.code).length>0){      
