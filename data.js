@@ -207,13 +207,13 @@ window_update_trans = [
         ],
         fields: [
             {field:'seller_addr',data:[
-                {period_start:'',period_end:'',index:-1,value:'Gen 2 Address 1'}
+                {value:'Gen 2 Address 1'}
             ]},
             {field:'seller_tin',data:[
-                {period_start:'',period_end:'',index:-1,value:'000-000-0002'}
+                {value:'000-000-0002'}
             ]},
             {field:'seller_wesm_bid',data:[
-                {period_start:'',period_end:'',index:1,value:'GEN02'}
+                {value:'GEN02'}
             ]},
         ]},
     {window:'contracts',contract:'PSA-GEN01-00001',
@@ -221,14 +221,20 @@ window_update_trans = [
             {status:'draft',sub_status:'',update_by:'MKTG',update_time:'2023-01-01 00:00',remarks:''},
         ],
         fields: [
+            {field:'period_from',data:[
+                {value:'2023-01'}
+            ]},
+            {field:'period_to',data:[
+                {value:'2033-12'}
+            ]},
             {field:'plant_sources',data:[
-                {period_start:'',period_end:'',index:-1,value:'PLANT01'}
+                {value:'PLANT01'}
             ]},
             {field:'period_start',data:[
-                {period_start:'',period_end:'',index:-1,value:'2023-01'}
+                {value:'2023-01'}
             ]},
             {field:'period_end',data:[
-                {period_end:'',period_end:'',index:-1,value:'2024-02'}
+                {value:'2024-02'}
             ]},
         ]},
     {window:'dynamics',category:'INDEX',splits:[

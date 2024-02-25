@@ -74,9 +74,9 @@
   optPartyCategories()
 
   const defaultHeader = [
-    {...getVariable('owned'),selector:'form',field_locs:'row',required:true,readonly:false,main:true},
-    {...getVariable('code'),selector:'form',field_locs:'row',required:true,readonly:false,main:true},
-    {...getVariable('name'),selector:'form',field_locs:'row',required:true,readonly:true},
+    {...getVariable('owned'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
+    {...getVariable('code'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
+    {...getVariable('name'),selector:'form',field_locs:'row',required:true,readonly:false},
   ]
   
   const detailFields = [
@@ -130,7 +130,6 @@
     deepCopy(window_fields).filter(x=> x.category ==partyCategory).map(x=>{
       var variable = deepCopy(variables).filter(y=> y.code == x.field)[0]
       variable.selector = x.field_locs=='row'?'form':'table'
-      variable.readonly = x.field_locs=='row'
       if(x.field_locs=='row')partyRowHeaders.push(variable)
       if(x.field_locs=='detail')partyDetailHeaders.push(variable)
     })
@@ -180,7 +179,7 @@
       var htmlRowTemp = [];
       //header
       html.push(`<tr>`)
-      html.push(`<th>${variable.text}</th><th>Index</th><th>From</th><th>To</th>`)
+      html.push(`<th colspan="4">${variable.text}</th>`)
       html.push(`<td><a href="#" class="mx-2" onclick='updatePartyAddDetailRow(this,${JSON.stringify(variable)})'>Add</a></td>`)
       html.push(`</tr>`)
 
@@ -398,12 +397,12 @@
         newFields.push(field)
         var htmlVal = []
         datafield.data.map(data=>{
-          console.log(data)
-          var refFields = [data.value]
+          var values = [data.value]
           detailFields.map(detailField=>{
-            if(data[detailField.code]) refFields.push(data[detailField.code])
+            var value = data[detailField.code]
+            if(value&&value!=detailField.value) values.push(value)
           })
-          htmlVal.push(refFields.join(' | '))   
+          htmlVal.push(values.join(' | '))   
         }) 
         var newVal = htmlVal.join('</br>')
         var prevVal = prevVals[field]??''

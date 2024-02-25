@@ -18,7 +18,7 @@
     <h2>Contracts</h2>      
     <div class="form-row my-2">
       <div class="form-group">
-        <select class="form-control" id="optContractCategories" onchange="refreshTableContracts()"></select>
+        <select class="form-control" id="optContractCategories" onchange="refreshContractTable()"></select>
       </div>
       <div class="mx-auto"></div>        
       <div>
@@ -52,356 +52,395 @@
 <script>
 
   var contractCategory = ''
-  const  contractMainFields = [ 'code','seller','buyer'];
-  const  contractEndFields = ['status', 'sub_status', 'remarks', 'update_by', 'update_time']
-  var contractRowFields = []
-  var contractDetailFields = []
+
+  function contractRowButtons (arg,status){
+    var btns = []
+    if(status!='submitted')btns.push(`<a href="#" class="mx-2" onclick='updateContract(${arg})'>Edit</a>`)
+    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick='submitContract(${arg})'>Submit</a>`)
+    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick='approveContract(${arg})'>Approve</a>`)
+    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick='returnContract(${arg})'>Return</a>`)
+    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick='cancelContract(${arg})'>Cancel</a>`)
+    btns.push(`<a href="#" class="mx-2" onclick='showContractHistory(${arg})'>History</a>`)
+    return btns.join('')
+  }
 
   function optContractCategories(){
     var opt =$('#optContractCategories')
-    opt.empty()
-    window_categories
-      .filter(category => category.window == 'contracts')
-      .map(category =>{
-        opt.append(`<option value='${category.code}'>${category.text}</option>`)
-      })
+    opt.empty()   
+    window_categories.filter(x=> x.window == 'contracts' ).map(x=>{
+      opt.append(`<option value='${x.code}'>${x.text}</option>`)
+    })
   }
   optContractCategories()
 
-  function getContractData() {
-    return deepCopy(contracts)
-      .filter(x => x.category === contractCategory)
-      .map(contract => {
-        deepCopy(window_update_trans)
-          .filter(tran=> tran.contract == contract.code&&tran.window=='contracts').forEach(tran => {
-            var tranStatus = getLast(tran.status); 
-            if(tranStatus.status !=='canceled') {
-              contract.status = tranStatus.status
-              var step = approval_steps.filter(x=> x.code==tranStatus.sub_status)[0]
-              contract.sub_status = step?step.text:''
-              contract.update_by = tranStatus.update_by  
-              contract.update_time = tranStatus.update_time  
-              contract.remarks = tranStatus.remarks  
- 
-              tran.fields.forEach(field =>{ 
-                var variable = variables.filter(x=> x.code == field.field)[0]  
-                var wField = window_fields.filter(x=> x.field == field.field && x.category=== contractCategory)[0]  
-                if((wField?wField.field_locs:variable.field_locs) == 'row'){
-                  contract[field.field] = getLast(field.data).value           
-                } else{
-                  field.data.map(data=>{
-                    if(data.reffields)data.reffields.map(x=>{data[x.field]=x.value})
-                  })
-                  contract[field.field]= field.data
-                }
-              });
-            }           
-          });
-          return contract;
-      }).filter(x=> x.status);
-  }
+  const defaultHeader = [
+    {...getVariable('code'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
+    {...getVariable('buyer'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
+    {...getVariable('seller'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
+    {...getVariable('period_from'),selector:'form',field_locs:'row',required:true,readonly:false},
+    {...getVariable('period_to'),selector:'form',field_locs:'row',required:true,readonly:false},
+  ]
   
-  function contractRowButtons (code,status){
-    var btns = []
-    if(status!='submitted')btns.push(`<a href="#" class="mx-2" onclick="updateContract('${code}')">Edit</a>`)
-    if(status=='draft')btns.push(`<a href="#" class="mx-2" onclick="submitContract('${code}')">Submit</a>`)
-    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick="approveContract('${code}')">Approve</a>`)
-    if(status=='submitted')btns.push(`<a href="#" class="mx-2" onclick="returnContract('${code}')">Return</a>`)
-    if(status=='returned'||status=='draft')btns.push(`<a href="#" class="mx-2" onclick="cancelContract('${code}')">Cancel</a>`)
-    btns.push(`<a href="#" class="mx-2" onclick="getContractHistory('${code}')">History</a>`)
-    return btns.join('')
-  }
- 
-  function refreshTableContracts() {
-    contractCategory = $('#optContractCategories').val();
-    contractRowFields = ['period_start', 'period_end']; 
-    contractDetailFields = []   
-    window_fields
-    .filter(x => x.category == contractCategory)
-    .forEach(row => {
-      if(row.field_locs == 'row') contractRowFields.push(row.field);
-      if(row.field_locs == 'detail') contractDetailFields.push(row.field);
-    });
-    contractDetailFields.push('billing_template');
+  const detailFields = [
+    {...getVariable('index'),extension:'style="max-width:60px;"',value:1,required:true},
+    {...getVariable('period_from')},
+    {...getVariable('period_to')},
+  ]
 
+  var contractRowHeaders = []
+  var contractDetailHeaders = []
+  const endHeaders = [
+    {code:'status',text:'Status'},
+    {code:'sub_status',text:'Sub Status',view:'sub_status_text'},
+    {code:'remarks',text:'Remarks'},
+    {code:'update_by',text:'Update By'},
+    {code:'update_time',text:'Update Time'},
+  ]
+
+  function getLatestContractData(final=false){ 
+    const checkStatus = (status) => final ? status === 'approved' : status !== 'canceled';
+
+    var query = deepCopy(window_update_trans)
+    .filter(x=> checkStatus(getLast(x.status).status) && x.window == 'contracts')
+    .map(tran=>{
+      var contract = contracts.filter(x=> x.code == tran.contract)[0]
+      contractRowHeaders.filter(x=> !x.main).map(field=>{
+        var data = (tran.fields.filter(x=> x.field == field.code)[0]??{}).data
+        contract[field.code] = data?getLast(data).value:''
+      })
+      //get last status of the transaction
+      tran.statuslog = tran.status
+      var stat = getLast(tran.status)
+      ;tran = {...tran,...stat, ...contract}
+      var sub_status = approval_steps.filter(x=> x.code == tran.sub_status)[0]
+      tran.sub_status_text = sub_status?sub_status.text:''
+      tran.remarks = tran.statuslog.filter(x=> x.remarks).map(x=> `${x.update_by}: ${x.remarks}`).join('</br>')
+      return tran
+    })
+    return getGroupLast(query,['category','code'])
+  }
+
+  function refreshContractTable(){    
+    contractCategory = $('#optContractCategories').val();
     var table = $('#tableContracts');
     var trHead = table.find('thead tr');
-    trHead.empty();
-    var contractFields = [...contractMainFields,...contractRowFields,...contractEndFields]
-    contractFields.forEach(field => {
-      const variable = variables.find(x => x.code === field);
-      trHead.append(`<th>${variable.text}</th>`);
-    });
+    trHead.empty();    
+    contractRowHeaders = deepCopy(defaultHeader)
+    contractDetailHeaders = []
 
-    var tbody = table.find('tbody');
-    tbody.empty();
-    getContractData().forEach(row => {
-        var strTr = [`<tr>`];
-        var status
-        contractFields.forEach(field => {
-          strTr.push(`<td>${row[field] || ''}</td>`);
-          if (field === 'status') status = row[field];          
-        });
-        strTr.push(`<td>${contractRowButtons(row['code'],status)}</td>`)
-        strTr.push('</tr>');
-        tbody.append(strTr.join(''));
-    });
-  }
-
-  function updateContract(code=''){
-    var html = [];
-    var rowData = getContractData().filter(x=> x.code == code)[0];
-    html.push('<div>');
-    html.push('<div class="rowFields">');
-    [...contractMainFields,...contractRowFields].map(field=>{
-      var variable = variables.filter(x => x.code == field)[0]
-      var rowField = window_fields.filter(x => x.field == field && x.category == contractCategory)[0]
-
-      var readonly = code?['buyer','seller','code'].includes(field):false
-      var required = variable.category=='system'||rowField.required
-      var multiple = variable.category!='system'&&rowField.instance=='multiple'
-      var value = code?rowData[field]:''
-
-      if(variable&&variable.type=='text')html.push(htmlControlText('form',variable.code,variable.text,value,required,readonly))
-      if(variable&&variable.type=='domain')html.push(htmlControlOption('form',variable.code,variable.text,value,required,readonly,getOptionDomain(field),multiple))
-      if(variable&&variable.type=='number')html.push(htmlControlNumber('form',variable.code,variable.text,value,required,readonly,step))
-      if(variable&&variable.type=='period')html.push(htmlControlPeriod('form',variable.code,variable.text,value,required,readonly))
+    //get fields for the category
+    deepCopy(window_fields).filter(x=> x.category ==contractCategory).map(x=>{
+      var variable = deepCopy(variables).filter(y=> y.code == x.field)[0]
+      variable.selector = x.field_locs=='row'?'form':'table'
+      if(x.field_locs=='row')contractRowHeaders.push(variable)
+      if(x.field_locs=='detail')contractDetailHeaders.push(variable)
     })
-
-    html.push('</div>');
-
-    html.push('<div class="detailFields">');
-    if(contractDetailFields.length>0){      
-      html.push('<table class="table table-bordered">');
-      html.push('<thead><tr><th>Index</th><th>Period Start</th><th>Period End</th><th>Value</th><th></th></tr></thead>');    
-      
-      contractDetailFields.map(field=>{
-        html.push(`<tbody val=${field}>`);
-        var variable = variables.filter(x=> x.code == field)[0]  
-        html.push(`<tr><td colspan="4">${variable.text}</td><td><a href="#" class="mx-2" onclick="addContractDetailRow(this,'${field}')">Add</a></td></tr>`)
-        if(code&&rowData[field]){
-          rowData[field].map(data=>{html.push(contractDetailRow(field, data))})
-        }  
-        html.push('</tbody>');
-      })
-
-      html.push('</table>');
-    }
-    html.push('</div>');
-
-
-    
-
-    html.push('</div>');
-    html.push(`<button type="button" class="btn btn-primary" onclick="saveContract('${code}')">Save</button>`)
-    modal = modalShow(code?'New':'Update' + ' Contract',html.join(''))
-  }
   
-  function addContractDetailRow(ctrl,code){
-    $(ctrl.closest('tbody')).append(contractDetailRow(code))
+    //add headers to table
+    var rowHeaders = [...contractRowHeaders,...endHeaders]    
+    rowHeaders.map(header => {
+      trHead.append(`<th>${header.text}</th>`);
+    });
+    trHead.append(`<th></th>`);
+
+    //add data
+    var tbody = table.find('tbody');
+    tbody.empty();    
+    getLatestContractData().filter(x=> x.category == contractCategory).map(data=>{
+      var strTr = [`<tr>`];
+      rowHeaders.map(header => {  
+        strTr.push(`<td>${data[header.view??header.code]??''}</td>`);   
+      });      
+      strTr.push(`<td>${contractRowButtons(JSON.stringify(data),data.status)}</td>`)
+      strTr.push('</tr>');
+      tbody.append(strTr.join(''));
+    })
   }
 
-  function removeContractDetailRow(ctrl){
+  function updateContract(item=''){
+    var update = item!='';
+    var html = [];
+    html.push('<div>');
+    html.push('<div class="rowFields">'); 
+    //Row controls
+    var rowHeaders = []
+    deepCopy(contractRowHeaders).map(header=>{
+      if(update){
+        header.value = item[header.code]
+      }
+      html.push(htmlControl(header,update))
+      rowHeaders.push(header.code)
+    })
+    html.push('</div>');  
+    //Details Controls
+    html.push('<div class="extFields">'); 
+    deepCopy(contractDetailHeaders).map(header=>{
+      var variable = getVariable(header.code)
+      html.push(`<table class="table table-bordered detailtable" val='${variable.code}'>`); 
+      var htmlHeaderTemp = []
+      var htmlRowTemp = [];
+      //header
+      html.push(`<tr>`)
+      html.push(`<th colspan="4">${variable.text}</th>`)
+      html.push(`<td><a href="#" class="mx-2" onclick='updateContractAddDetailRow(this,${JSON.stringify(variable)})'>Add</a></td>`)
+      html.push(`</tr>`)
+
+      //rows
+      if(update){
+        var dataFields = item.fields.filter(x=> x.field == header.code)[0]??{data:[]}        
+        dataFields.data.map(data=>{
+          data.variable = variable
+          html.push(updateContractDetailRow(variable,data))
+        })        
+      }
+      rowHeaders.push(header.code)
+      html.push('</table>');   
+    }) 
+    html.push('</div>');  
+    html.push('</div>');
+    html.push(`<button type="button" class="btn btn-primary" onclick="saveContract(this,${update})">Save</button>`)
+    modal = modalShow(update?'New':'Update' + ' Contract',html.join(''))
+  }
+
+  function updateContractDetailRow(variable,refdata=''){
+    var html =[]
+    var update = refdata!=''
+    html.push(`<tr class='detailrow'>`)
+
+    //values          
+    variable.selector = 'table'
+    if(update)variable.value = refdata.value
+    html.push(`<td>${htmlControl(variable,update)}</td>`)
+    
+    detailFields.map(detailField=>{
+      if(update)detailField.value = refdata[detailField.code]??''
+      html.push(`<td>${htmlControl(detailField,update)}</td>`)
+    })
+    //button
+    html.push(`<td><a href="#" class="mx-2" onclick="updateContractRemoveDetailRow(this)">Remove</a></td>`)       
+    html.push(`</tr>`)
+    return html.join('')
+  }
+
+  function updateContractAddDetailRow(ctrl,variable){
+    $(ctrl.closest('tbody')).append(updateContractDetailRow(variable))
+  }
+
+  function updateContractRemoveDetailRow(ctrl){
     $(ctrl.closest('tr')).empty()
   }
 
-  function contractDetailRow(code, data){
-    var variable = variables.filter(x=> x.code == code)[0] 
-    var htmlIndex = htmlControlNumber('','index',variable.text,data?data.index:'',true,false,'')
-    var htmlPeriodStart = htmlControlPeriod('',variable.code,variable.text,data?data.period_start:'',false,false)
-    var htmlPeriodend = htmlControlPeriod('',variable.code,variable.text,data?data.period_end:'',false,false)
-
-    var wField = window_fields.filter(x=> x.field == code && x.category == contractCategory)[0] 
-    switch (variable.type) {
-        case 'text':
-            htmlValue = htmlControlText('table',variable.code,variable.text,data?data.value:'',true,false)
-            break;
-        case 'domain':
-            htmlValue = htmlControlOption('table',variable.code,variable.text,data?data.value:'',true,false,getOptionDomain(code),wField?wField.instance=='multiple':false)
-            break;
-        case 'number':
-            htmlValue = htmlControlNumber('table',variable.code,variable.text,data?data.value:'',true,false,'')
-            break;
-        default:
+  function newContractData(){
+    return {
+      window:'contracts',
+      status:[{status:'draft',sub_status:'',update_by:getUser(),update_time:getCurrentTime(),remarks:''},],
+      fields: []
     }
-
-    var ctrl = `<a href="#" class="mx-2" onclick="removeContractDetailRow(this)">Remove</a>`
-    return `<tr class="datarow"><td>${htmlIndex}</td><td>${htmlPeriodStart}</td><td>${htmlPeriodend}</td><td>${htmlValue}</td><td>${ctrl}</td></tr>`
   }
 
-  function saveContract(code){
-    var newContract = {}  
-    var newFields = []
+  function getContractLatestTransItem(item){
+    return getLast(getContractTransItem(item))
+  }
+
+  function getContractTransItem(item){
+    return window_update_trans.filter(x=> x.window == 'contracts'
+      && getLast(x.status).status!='canceled' 
+      && x.contract == item.contract)
+  }
+
+  function saveContract(ctrl,update){
     var errFields = []
-    $.each(modal.find('.form-control'),function(i,v){
-      if ($(v).prop('required')&&!$(v).val()){
-        var variable = variables.filter(x=> x.code == $(v).attr('val'))[0]
+    var newData = newContractData()
+    var modalBody = $(ctrl).closest('.modal-body') 
+    var contractData = {category:contractCategory}
+    //required validation  
+    $.each($(modalBody).find('.rowFields .form-control'),function(i,cell){
+      var field = $(cell).attr('val');  
+      var value = $(cell).val();
+      var variable = contractRowHeaders.filter(x=> x.code == field)[0]
+      if(!value&&variable.required){
         errFields.push(variable.text)
+      }else if(variable.main){
+        contractData[field]=value
+      }else{
+        newData.fields.push({field:field,data:[{value:value}]}) 
       }
+    })
+    newData.contract = contractData.code
+
+    $.each($(modalBody).find('.detailtable'),function(i,table){
+      var field = $(table).attr('val'); 
+      var variable = contractRowHeaders.filter(x=> x.code == field)[0]
+      var fieldData = {field:field, data:[]}
+      $.each($(table).find('.detailrow'),function(j,row){ 
+        var rowData = {}
+        $.each($(row).find('.form-control'),function(k,cell){
+          var rowfield =  $(cell).attr('val'); 
+          var value = $(cell).val(); 
+          if(rowfield==field){
+            if(!value){
+              errFields.push(`${variable.text} [${j}]`)              
+            }else{
+              rowData.value = value
+            }
+          }else if(value){            
+            rowData[rowfield] = value
+          }
+        })
+        if(rowData.value)fieldData.data.push(rowData)
+      })      
+      newData.fields.push(fieldData) 
     })
     if (errFields.length>0){
       alert('Required fields: \n• ' + errFields.join("\n• "));
       return
-    }
-    $.each(modal.find('.rowFields .form-control'),function(i,v){
-      var field = $(v).attr('val');      
-      var windowField = window_fields.filter(x=> x.field == field && x.category == contractCategory)[0]
-      if(contractMainFields.includes(field)){
-        newContract[field] = $(v).val()
-      }else{        
-        var prevVal = $(v).attr('prevval');
-        var newVal = $(v).val()
-        if(String(prevVal)!=String(newVal)){      
-          newFields.push(
-            {field:field,data:[{period_start:'',period_end:'',index:-1,value:newVal}]}
-          )    
-        }
-      }      
-    })
-
-    var detailFieldList = ['index','period_start','period_end','value']
-    $.each(modal.find('.detailFields tbody'),function(i,v){
-      var update = false
-      var field = $(v).attr('val');      
-      var windowField = window_fields.filter(x=> x.field == field && x.category == contractCategory)[0]
-
-      var newFieldData = {field:field,data:[]}
-
-      $.each($(v).find('.datarow'),function(j,datarow){
-        var data = {reffields:[]}
-        $.each($(datarow).find('.form-control'),function(k,control){
-          var prevVal = $(control).attr('prevval');
-          var newVal = $(control).val()
-          if(String(prevVal)!=String(newVal))update=true
-          if(detailFieldList[k]=='value'){
-            data.value = newVal
-          }else{
-            data.reffields.push({field:detailFieldList[k],value:newVal})
-          }
-        })        
-        newFieldData.data.push(data)
-      }) 
-      if(update)newFields.push(newFieldData)
-    })
-
-    var newTrans = {window:'contracts',contract:newContract.code,
-      status:[{status:'draft',sub_status:'', update_by:getUser(),update_time:getCurrentTime()}],
-      fields:newFields,
+    }    
+   
+    //contract code exist
+    if (!update&&contracts.filter(x=> x.code == newData.code).length>0){      
+      alert(`Code: ${newData.code} already exist.`);
+      return
     }
 
-    if(!code){
-      newContract.category = contractCategory
-      contracts.push(newContract)  
+    var lastTrans = getContractLatestTransItem(newData)
+    var lastTransStatus = lastTrans?getLast(lastTrans.status).status:''
+    if(lastTransStatus=='submitted'){
+      alert(`A transaction with a 'submitted' status already exists; Creating another transaction is not allowed`)
+      return
+    }
+    if(!update&&lastTransStatus=='draft'){
+      var confirmation = confirm(`A transaction with a 'draft' status already exists; If you continue, this will update the transaction`);
+      if (!confirmation) return
+    }
+
+    //save data
+    if(!update){
+      contracts.push(contractData)
+    }
+    if(lastTransStatus=='draft'){ 
+      Object.assign(lastTrans, newData);
     }else{
-      var contract = contracts.filter(x=> x.code==code)[0] 
-      if (contract)Object.assign(contract, newContract);
-    }  
-    
-    var tran = getLast(window_update_trans.filter(x=> x.contract == code))
-    var stats = tran?getLast(tran.status).status:''
-    if(stats=='draft'||stats=='returned'){
-      if(stats=='draft'){
-        var tranStatus = getLast(tran.status);
-        Object.assign(tranStatus, newTrans.status[0]);
-      }else{
-        tran.status.push(newTrans.status[0])
-      }
-      newTrans.fields.map(newfield=>{
-        var field = tran.fields.filter(x=> x.field == newfield.field)[0]
-        if(field){
-          Object.assign(field, newfield);
-        }else{
-          tran.fields.push(newfield)
-        }
-      })
-    }else{
-      window_update_trans.push(newTrans)
+      window_update_trans.push(newData)
     }
-
-
 
     modal.modal('hide')
-    refreshTableContracts()
+    refreshContractTable()
+    return
   }
+    
+  function submitContract(item){    
+    var remarks = showPromptRemarks(true);
+    if(remarks.ok){
 
-  function submitContract(code){    
-    var confirmation = confirm("Are you sure you want to submit this entry?");
-    if (confirmation) { 
-      var trans = $(window_update_trans.filter(x=> x.contract == code)).last().get(0)
+      var trans = getContractLatestTransItem(item)
       var approvalrule = window_categories.filter(x=> x.code == contractCategory)[0].approval
       var step = approval_steps.filter(x=> x.rule==approvalrule)[0].code
-      Object.assign(getLast(trans.status), {status:'submitted',sub_status:step, update_by:getUser(),update_time:getCurrentTime()});
-      refreshTableContracts()
+      latestStatus = getLast(trans.status)
+      var newStatus = {status:'submitted',sub_status:step, update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text}
+      if(latestStatus.status=='draft'){
+        Object.assign(latestStatus,newStatus)
+      } else{
+        trans.status.push(newStatus)
+      }
+      refreshContractTable()
     }
   }
-
-  function approveContract(code){    
-    var confirmation = confirm("Are you sure you want to approve this entry?");
-    if (confirmation) { 
-      var trans = $(window_update_trans.filter(x=> x.contract == code)).last().get(0)
+     
+  function approveContract(item){    
+    var remarks = showPromptRemarks(false);
+    if(remarks.ok){
+      var trans = getContractLatestTransItem(item)
       var step = $(trans.status).last().get(0).sub_status
       var approvalrule = window_categories.filter(x=> x.code == contractCategory)[0].approval
       var stepindex = approval_steps.filter(x=> x.rule==approvalrule && x.code == step)[0].index
       var newStep = approval_steps.filter(x=> x.rule==approvalrule && x.index >stepindex)[0]
-      trans.status.push({status:newStep?'submitted':'approved',sub_status:newStep?newStep.code:'', update_by:getUser(),update_time:getCurrentTime()})
-      refreshTableContracts()
+      trans.status.push({status:newStep?'submitted':'approved',sub_status:newStep?newStep.code:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text})
+      refreshContractTable()
     }
-  }
-
-  function cancelContract(code){    
-    var remarks = prompt("Please provide remarks for cancelling this entry:");
-    if (remarks !== null && remarks.trim() !== "") {    
-      var trans = $(window_update_trans.filter(x=> x.contract == code)).last().get(0)
-      trans.status.push({status:'canceled',sub_status:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks})
-      refreshTableContracts()
-    } else {
-        alert("You must provide remarks for cancelling this entry.");
+  } 
+     
+  function returnContract(item){    
+    var remarks = showPromptRemarks(true);
+    if(remarks.ok){
+      var trans = getContractLatestTransItem(item)
+      trans.status.push({status:'returned',sub_status:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text})
+      refreshContractTable()
     }
-  }
-
-  function returnContract(code){    
-    var remarks = prompt("Please provide remarks for returning this entry:");
-    if (remarks !== null && remarks.trim() !== "") {    
-      var trans = $(window_update_trans.filter(x=> x.contract == code)).last().get(0)
-      trans.status.push({status:'returned',sub_status:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks})
-      refreshTableContracts()
-    } else {
-        alert("You must provide remarks for returning this entry.");
+  } 
+     
+  function cancelContract(item){    
+    var remarks = showPromptRemarks(true);
+    if(remarks.ok){
+      var trans = getContractLatestTransItem(item)
+      trans.status.push({status:'canceled',sub_status:'', update_by:getUser(),update_time:getCurrentTime(),remarks:remarks.text})
+      refreshContractTable()
     }
-  }
-  refreshTableContracts()
+  } 
   
-  function getContractHistory(code){
+  function showContractHistory(item){
     var html = []
-    deepCopy(window_update_trans)
-    .filter(tran=> tran.contract == code&&tran.window=='contracts')
-    .map(tran=>{      
-      html.push('<div class="card p-3 mb-3">')
-      html.push('<div style="max-width:400px">')
+    var trans = getContractTransItem(item)
+    var prevFields = null
+    
+    var prevVals = {}
+    var prevFields = []
+    trans.map(tran=>{     
+      var newstat = getLast(tran.status).status
+      html.push('<div class="card p-3 mb-3">')        
+
+      //update values 
+      html.push('<div>') 
       html.push('<h5>Update Values</h5>')      
       html.push('<table class="table table-sm table-condensed table-bordered">')
-      tran.fields.map(field=>{
-        var variable = variables.filter(x=> x.code == field.field)[0] 
-        html.push(`<tr><td>${variable.text}</td><td>${field.data.map(x=>{return x.value}).join(',')}</td></tr>`)
-      })
-      html.push('</table>')
-      html.push(`</div>`)
+      html.push(`<tr><th></th><th>Old</th><th>New</th></tr>`)
+      var newFields = []
+      tran.fields.map(datafield=>{
+        var field = datafield.field
+        newFields.push(field)
+        var htmlVal = []
+        datafield.data.map(data=>{
+          var values = [data.value]
+          detailFields.map(detailField=>{
+            var value = data[detailField.code]
+            if(value&&value!=detailField.value) values.push(value)
+          })
+          htmlVal.push(values.join(' | '))   
+        }) 
+        var newVal = htmlVal.join('</br>')
+        var prevVal = prevVals[field]??''
+        if(prevVal!=newVal&&newstat){
+          html.push(`<tr><td>${getVariable(field).text}</td><td>${prevVal}</td><td>${newVal}</td></tr>`)
+          if(newstat=='approved')prevVals[field]=newVal
+        }
+      }) 
       
-      html.push('<div style="max-width:800px">')
-      html.push('<h5>Approval Log</h5>')
-      html.push('<table class="table table-sm table-condensed table-bordered">')
-        html.push(`<tr><th>Time</th><th>User</th><th>Status</th><th>Sub Status</th><th>Remarks</th></tr>`)
-      tran.status.map(stats=>{
-        var substatus = approval_steps.filter(x=> x.code==stats.sub_status)[0]
-        html.push(`<tr><td>${stats.update_time}</td><td>${stats.update_by}</td><td>${stats.status??''}</td><td>${substatus?substatus.text:''}</td><td>${stats.remarks??''}</td></tr>`)
+      //for deleted values
+      prevFields.filter(x=> !newFields.includes(x)).map(field=>{
+        console.log(prevVals)
+        html.push(`<tr><td>${getVariable(field).text}</td><td>${prevVals[field]??''}</td><td></td></tr>`)
       })
       html.push('</table>')
-      html.push(`</div>`)
-      html.push(`</div>`)
+      html.push('</div>')
+      prevFields = newFields
+
+      //approval logs
+      html.push('<div>') 
+      html.push('<h5>Approval Logs</h5>')      
+      html.push('<table class="table table-sm table-condensed table-bordered">')
+      html.push(`<tr><th>Time</th><th>User</th><th>Status</th><th>Sub Status</th><th>Remarks</th></tr>`)
+      tran.status.map(stat=>{
+        var substatus = approval_steps.filter(x=> x.code==stat.sub_status)[0]
+        html.push(`<tr><td>${stat.update_time}</td><td>${stat.update_by}</td><td>${stat.status??''}</td><td>${substatus?substatus.text:''}</td><td>${stat.remarks??''}</td></tr>`)
+      })
+      html.push('</table>')      
+      html.push('</div>')
+
+      html.push('</div>')
     })
-    
-    modal = modalShow(`Change History [${code}]`,html.join(''))
+    modal = modalShow(`Change History`,html.join(''))
   }
+
+  refreshContractTable()
  
 </script>
 
