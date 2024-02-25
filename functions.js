@@ -50,7 +50,7 @@ function getOptionDomain(variable){
             approval_rules.forEach(x => options.push({value:x.code,text:x.text}));
             break;
         case 'regex':
-            regex_validation.forEach(x => options.push({value:x.code,text:x.code}));
+            regex_validations.forEach(x => options.push({value:x.code,text:x.code}));
             break;
         case 'code_strucutre':
             options.push({value:'regex',text:'Regex'})

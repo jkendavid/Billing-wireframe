@@ -60,9 +60,9 @@
     opt.append(`<option value='partybuyer'>Party Buyer</option>`)
     opt.append(`<option value='contract'>Contract</option>`)
     opt.append(`<option value='dynamic'>Dynamic</option>`)
-    opt.append(`<option value='charges'>Charges</option>`)
+    opt.append(`<option value='charge'>Charge</option>`)
     opt.append(`<option value='external'>External</option>`)
-    opt.append(`<option value='external'>System</option>`)
+    opt.append(`<option value='system'>System</option>`)
   }
   optVariableCategories()
 
@@ -79,7 +79,7 @@
       ],
       extension:`onchange="updateVariableType(this)"`
     },
-    {row:true,selector:'form',code:'code',text:'Code',readonly:true,required:true,type:'text'},
+    {...getVariable('code'),row:true,selector:'form',readonly:true,required:true},
     {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
     {row:true,selector:'form',code:'description',text:'Description',readonly:false,required:false,type:'text'},
     {row:false,selector:'form',code:'unit',text:'Unit',readonly:false,required:false,type:'text'},
