@@ -52,6 +52,11 @@ function getOptionDomain(variable){
         case 'regex':
             regex_validation.forEach(x => options.push({value:x.code,text:x.code}));
             break;
+        case 'code_strucutre':
+            options.push({value:'regex',text:'Regex'})
+            options.push({value:'formula',text:'Formula'})
+            options.push({value:'query',text:'Query'})
+            break;
         case 'bool':
             options.push({value:1,text:'Yes'})
             options.push({value:0,text:'No'})
@@ -77,36 +82,6 @@ function htmlControlFormat(type,cotrol,label,required){
     }
     return html;
 }
-
-function htmlControlText(type,id,label,value,required,readonly){
-    var strValue = value?`value="${value}"`:''
-    return htmlControlFormat(type,`<input prevval="${value}" type="text" ${strValue} class="form-control" val="${id}" ${required?'required':''}  ${readonly?'readonly':''}>`,label,required) 
-}
-
-function htmlControlNumber(type,id,label,value,required,readonly,step){
-    var strValue = value?`value="${value}"`: id=='index'?'value="1"':''
-    var style = id=='index'?'style="max-width:80px"':''
-    return htmlControlFormat(type,`<input ${style} prevval="${value}" type="number" step="${step}" ${strValue} class="form-control" val="${id}" ${required?'required':''}  ${readonly?'readonly':''}>`,label,required) 
-}
-
-
-function htmlControlPeriod(type,id,label,value,required,readonly){
-    var strValue = value?`value="${value}"`:''
-    return htmlControlFormat(type,`<input prevval="${value}" type="month" ${strValue} class="form-control" val="${id}" ${required?'required':''}  ${readonly?'readonly':''}>`,label,required) 
-}
-
-function htmlControlOption(type,id,label,value,required,readonly,options,multiple){
-    var htmlOption = []
-    htmlOption.push(`<option value=""></option>`);
-    if(options){
-        options.map(option=> {
-            var selected = value==option.value?'selected':''
-            htmlOption.push(`<option value="${option.value}" ${selected}>${option.text}</option>`)
-        })
-    }
-    return htmlControlFormat(type,`<select class="form-control" prevval="${value}" val="${id}" ${required?'required':''}  ${readonly?'readonly':''} ${multiple?'multiple':''}>${htmlOption}</select>`,label,required) 
-}
-
 
 function htmlControl(obj,readonly=false){
     switch (obj.type) {
@@ -138,8 +113,7 @@ function htmlControl_Text(obj,readonly=false){
 }
 
 function htmlControl_Number(obj,readonly=false){
-    var strValue = obj.value!=undefined?`value="${obj.value}"`: obj.id=='index'?'value="1"':''    
-    console.log(obj)
+    var strValue = obj.value!=undefined?`value="${obj.value}"`: obj.id=='index'?'value="1"':''
     var strMin = obj.min!=undefined?`min="${obj.min}"`:''
     var strMax = obj.max!=undefined?`max="${obj.max}"`:''
     return htmlControlFormat(obj.selector,`<input ${strMin} ${strMax} ${obj.extension} prevval="${obj.value}" type="number" step="${obj.step}" ${strValue} class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>`,obj.text,obj.required) 
@@ -246,7 +220,7 @@ function testRegex(pattern, text) {
 
 function fieldValidation(variable, value){
     //required check
-    if (variable.required && !value) return({ok:false, message:`${variable.text} [required]`})
+    if (variable.required && !value) return({ok:false, message:`${variable.text} [Cannot be blank]`})
 
     //regex check
     if (value&&variable.regex) {     

@@ -121,9 +121,15 @@
     deepCopy(window_fields).filter(x=> x.category ==dynamicCategory).map(x=>{
       var variable = deepCopy(variables).filter(y=> y.code == x.field)[0]
       variable.selector = x.field_locs=='row'?'form':'table'
-      variable.readonly = x.field_locs=='row'
-      if(x.field_locs=='row')dynamicRowHeaders.push(variable)
-      if(x.field_locs=='detail')dynamicDetailHeaders.push(variable)
+      if( x.field_locs=='row'){
+        variable.readonly = true
+        variable.required = true
+        variable.selector = 'form'
+        dynamicRowHeaders.push(variable)
+      }else{
+        variable.selector = 'table'
+        dynamicDetailHeaders.push(variable)
+      }
     })
     dynamicSplitfields = dynamicRowHeaders.map(x=> x.code)
   
@@ -164,11 +170,12 @@
     html.push('</div>');  
     //Details Controls
     html.push('<div class="extFields">'); 
-    deepCopy(dynamicDetailHeaders).map(header=>{
+    deepCopy(dynamicDetailHeaders.filter(x=> x.category =='dynamic')).map(header=>{
       var variable = getVariable(header.code)
       html.push(`<table class="table table-bordered detailtable" val='${variable.code}'>`); 
       var htmlHeaderTemp = []
       var htmlRowTemp = []
+      xx = variable
       var detailFields =  variable.reffields.filter(x=> !dynamicRowHeaders.map(y=>{return y.code}).includes(x) ) 
       //header
       detailFields.map(reffield=>{
@@ -267,9 +274,10 @@
     $.each($(modalBody).find('.rowFields .form-control'),function(i,cell){
       var field = $(cell).attr('val');  
       var value = $(cell).val();
-      if(!value){
-        errFields.push(getVariable(field).text)
-      }else if(errFields.length==0){
+      var validationResult = fieldValidation(dynamicRowHeaders.filter(x=> x.code == field)[0],value)
+      if (!validationResult.ok){
+        errFields.push(validationResult.message)
+      } else{
         newData.splits.push({field:field,value:value})
       }
     })
@@ -281,22 +289,24 @@
         $.each($(row).find('.form-control'),function(k,cell){
           var rowfield =  $(cell).attr('val'); 
           var value = $(cell).val(); 
-          if(!value){
-            errFields.push(`${getVariable(field).text} [${j}]`)
-          }else if(errFields.length==0){
-            if(field==rowfield){
+
+          var variable = getVariable(field)
+          variable.required = true
+          var validationResult = fieldValidation(variable,value)
+          if (!validationResult.ok){
+            errFields.push(validationResult.message)
+          }else if(field==rowfield){
               rowData.value = value
-            }else{
-              rowData.reffields.push({field:rowfield,value:value})
-            }
-          }
+          }else{
+            rowData.reffields.push({field:rowfield,value:value})
+          }         
         })
         if(rowData.value)fieldData.data.push(rowData)
       })      
       newData.fields.push(fieldData) 
     })
     if (errFields.length>0){
-      alert('Required fields: \n• ' + errFields.join("\n• "));
+      alert('Error fields: \n• ' + errFields.join("\n• "));
       return
     }    
    

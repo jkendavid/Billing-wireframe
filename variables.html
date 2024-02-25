@@ -74,6 +74,7 @@
         {value:'number',text:'Number'},
         {value:'period',text:'Period'},
         {value:'date',text:'Date'},
+        {value:'code',text:'Code'},
         {value:'domain',text:'Domain'},
       ],
       extension:`onchange="updateVariableType(this)"`
@@ -88,6 +89,7 @@
     {row:false,selector:'form',code:'domain_values',text:'Domain Values',readonly:false,required:true,type:'text'},
     {row:false,selector:'form',code:'reffields',text:'Reference Fields',readonly:false,required:true,type:'text'},
     {row:false,selector:'form',code:'regex',text:'Regex Validation',readonly:false,required:false,type:'domain'},
+    {row:false,selector:'form',code:'code_structure',text:'Code Structure',readonly:false,required:true,type:'domain'},
   ]
 
   function getVariableData(){
@@ -163,6 +165,9 @@
         case 'text':  
           fields = ['regex']
           break
+        case 'code':  
+          fields = ['code_structure']
+          break
     }
     
     if(variableCategory=='dynamic')fields.push('reffields')
@@ -179,7 +184,7 @@
     var errFields = []
     var newData = {category:variableCategory}
     var domainValues = []
-    
+
     $.each(modal.find('.form-control'),function(i,v){
       var field = $(v).attr('val');      
       if(field!='domain_values'){
