@@ -35,6 +35,7 @@ $('body').prepend(
                 <a class="dropdown-item" href="window_categories.html">Window Category</a>
                 <a class="dropdown-item" href="approval_rules.html">Approval Rules</a>
                 <a class="dropdown-item" href="rounding_rules.html">Rounding Rules</a>
+                <a class="dropdown-item" href="regex_validations.html">Regex Validations</a>
                 <a class="dropdown-item" href="finance_accounts.html">Finance Accounts</a>
                 <a class="dropdown-item" href="finance_account_link.html">Finance Accounts Link</a>
             </div>

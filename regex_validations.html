@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <title>Rounding Rules</title>
+  <title>Regex Validations</title>
   <style>   
     .form-group.row{
       max-width: 800px;
@@ -15,15 +15,15 @@
 <body>  
   <div id="container" class="container mt-4">
   <div>
-    <h2>Rounding Rules</h2>      
+    <h2>Regex Validations</h2>      
     <div class="form-row my-2">
       <div class="mx-auto"></div>        
       <div>
-        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateRounding()">Add New</button>
+        <button type="button" class="btn btn-primary" id="addNewButton" onclick="updateRegex()">Add New</button>
       </div>
     </div>
 
-    <table class="table table-bordered" id="tableRoundings">
+    <table class="table table-bordered" id="tableRegexs">
       <thead>
         <tr></tr>
       </thead>
@@ -51,18 +51,16 @@
 
   const headers = [
     {...getVariable('code'),row:true,selector:'form',readonly:true,required:true},
-    {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
-    {row:true,selector:'form',code:'decimal_place',text:'Decimal Place',readonly:false,required:false,type:'number',min:0, max:12},
-    {row:true,selector:'form',code:'description',text:'Description',readonly:false,required:false,type:'text'},
-  ]
-  
+    {row:true,selector:'form',code:'pattern',text:'Pattern',readonly:false,required:true,type:'code',code_structure:'regex'},
+    {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:true,type:'text'},
+  ]  
 
-  function getRoundingData(){
-    return rounding_rules
+  function getRegexData(){
+    return regex_validations
   }
 
-  function refreshTableRoundings(){    
-    var table = $('#tableRoundings');
+  function refreshTableRegexs(){    
+    var table = $('#tableRegexs');
     var trHead = table.find('thead tr');
     trHead.empty();
     headers.map(header => {
@@ -73,26 +71,26 @@
     var tbody = table.find('tbody');
     tbody.empty();
 
-    getRoundingData().map(data=>{
+    getRegexData().map(data=>{
       var strTr = [`<tr>`];
       var status
       headers.forEach(header => {  
         strTr.push(`<td>${data[header.view??header.code] ?? ''}</td>`);     
       });
-      strTr.push(`<td><a href="#" class="mx-2" onclick="updateRounding('${data.code}')">Edit</a></td>`)
+      strTr.push(`<td><a href="#" class="mx-2" onclick="updateRegex('${data.code}')">Edit</a></td>`)
       strTr.push('</tr>');
       tbody.append(strTr.join(''));
     })
   }
 
-  function updateRounding(code=''){
+  function updateRegex(code=''){
     var html = [];
     html.push('<div>');
     html.push('<div class="rowFields">');      
-    if(code)var rowData = getRoundingData().filter(x=> x.code == code)[0];  
+    if(code)var rowData = getRegexData().filter(x=> x.code == code)[0];  
     deepCopy(headers).filter(x=> x.row==true).map(header=>{
-      if(header.code=='rounding'){
-        header.options = rounding_rules.map(x=>{
+      if(header.code=='regex'){
+        header.options = regex_validations.map(x=>{
           return {value: x.code,text:x.text}
         })
       }
@@ -102,17 +100,17 @@
     html.push('</div>');    
   
     html.push('</div>');
-    html.push(`<button type="button" class="btn btn-primary" onclick="saveRounding('${code}')">Save</button>`)
-    modal = modalShow((code?'New':'Update') + ' Rounding',html.join(''))
+    html.push(`<button type="button" class="btn btn-primary" onclick="saveRegex('${code}')">Save</button>`)
+    modal = modalShow((code?'New':'Update') + ' Regex',html.join(''))
   }
 
-  function saveRounding(code=""){
+  function saveRegex(code=""){
     var errFields = []
     var newData = {}
     $.each(modal.find('.rowFields .form-control'),function(i,v){
       var field = $(v).attr('val');
       newData[field]=$(v).val()
-      
+
       var validationResult = fieldValidation(headers.filter(x=> x.code == field)[0],newData[field])
       if (!validationResult.ok)errFields.push(validationResult.message)
     })   
@@ -123,16 +121,16 @@
     }
 
     if(code){
-      var data = rounding_rules.filter(x=> x.code == code)[0]
+      var data = regex_validations.filter(x=> x.code == code)[0]
       Object.assign(data, newData);      
     }else{
-      rounding_rules.push(newData)
+      regex_validations.push(newData)
     }  
 
     modal.modal('hide')
-    refreshTableRoundings()
+    refreshTableRegexs()
   }
-  refreshTableRoundings()
+  refreshTableRegexs()
  
 </script>
 

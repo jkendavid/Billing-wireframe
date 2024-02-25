@@ -50,28 +50,17 @@
  
 
   const headers = [
-    {row:true,selector:'form',code:'code',text:'Code',readonly:true,required:true,type:'text'},
+    {...getVariable('code'),row:true,selector:'form',readonly:true,required:true},
     {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
     {row:false,selector:'form',code:'steps',view:'steps_text',text:'Steps',readonly:false,required:false,type:'text'},
   ]
   
   const fieldHeaders = [
-    {
-      selector:'table',code:'index',text:'Index',readonly:false,required:true,type:'number'
-    },
-    {
-      selector:'table',code:'code',text:'Code',readonly:false,required:true,type:'text'
-    },
-    {
-      selector:'table',code:'text',text:'Text',readonly:false,required:true,type:'text'
-    },
-    {
-      selector:'table',code:'skipable',text:'Skipable',readonly:false,required:true,type:'domain',
-      options:getOptionDomain('bool')
-    },
-    {
-      selector:'table',code:'approver',view:'approver_text',text:'Approver',readonly:false,required:true,type:'text'
-    },
+    {...getVariable('index'),selector:'table',readonly:false,required:true},
+    {...getVariable('code'),elector:'table',readonly:false,required:true},
+    {selector:'table',code:'text',text:'Text',readonly:false,required:true,type:'text'},
+    {selector:'table',code:'skipable',text:'Skipable',readonly:false,required:true,type:'bool'},
+    {selector:'table',code:'approver',view:'approver_text',text:'Approver',readonly:false,required:true,type:'text'},
   ]
  
   function getApprovalData(){
@@ -169,9 +158,9 @@
     $.each(modal.find('.rowFields .form-control'),function(i,v){
       var field = $(v).attr('val');
       newData[field]=$(v).val()
-      if ($(v).prop('required')&&!$(v).val()){
-        errFields.push(headers.filter(x=> x.code == field)[0].text)
-      }
+
+      var validationResult = fieldValidation(headers.filter(x=> x.code == field)[0],newData[field])
+      if (!validationResult.ok)errFields.push(validationResult.message)
     })
     var newFieldData = []
     $.each(modal.find('.extRow'),function(i,row){
@@ -179,15 +168,15 @@
       $.each($(row).find('.form-control'),function(j,ctrl){
         var field = $(ctrl).attr('val');
         newFieldRow[field]=$(ctrl).val()
-        if ($(ctrl).prop('required')&&!$(ctrl).val()){
-          errFields.push(fieldHeaders.filter(x=> x.code == field)[0].text)
-        }
+        
+        var validationResult = fieldValidation(fieldHeaders.filter(x=> x.code == field)[0],newFieldRow[field])
+        if (!validationResult.ok)errFields.push(validationResult.message)
       })
       newFieldData.push(newFieldRow)
     })
 
     if (errFields.length>0){
-      alert('Required fields: \n• ' + errFields.join("\n• "));
+      alert('Error fields: \n• ' + errFields.join("\n• "));
       return
     }
 

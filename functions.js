@@ -49,6 +49,9 @@ function getOptionDomain(variable){
         case 'approval':
             approval_rules.forEach(x => options.push({value:x.code,text:x.text}));
             break;
+        case 'regex':
+            regex_validation.forEach(x => options.push({value:x.code,text:x.code}));
+            break;
         case 'bool':
             options.push({value:1,text:'Yes'})
             options.push({value:0,text:'No'})
@@ -109,6 +112,8 @@ function htmlControl(obj,readonly=false){
     switch (obj.type) {
         case 'text':
             return htmlControl_Text(obj,readonly)
+        case 'code':
+            return htmlControl_Code(obj,readonly)
         case 'domain':
             return htmlControl_Option(obj,readonly)
         case 'number':
@@ -123,14 +128,21 @@ function htmlControl(obj,readonly=false){
 }
 
 
+function htmlControl_Code(obj,readonly=false){
+    return htmlControlFormat(obj.selector,`<textarea ${obj.extension} prevval="${obj.value}" type="text" class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>${obj.value??''}</textarea>`,obj.text,obj.required) 
+}
+
 function htmlControl_Text(obj,readonly=false){
     var strValue = obj.value?`value="${obj.value}"`:''
     return htmlControlFormat(obj.selector,`<input ${obj.extension} prevval="${obj.value}" type="text" ${strValue} class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>`,obj.text,obj.required) 
 }
 
 function htmlControl_Number(obj,readonly=false){
-    var strValue = obj.value?`value="${obj.value}"`: obj.id=='index'?'value="1"':''
-    return htmlControlFormat(obj.selector,`<input ${obj.extension} prevval="${obj.value}" type="number" step="${obj.step}" ${strValue} class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>`,obj.text,obj.required) 
+    var strValue = obj.value!=undefined?`value="${obj.value}"`: obj.id=='index'?'value="1"':''    
+    console.log(obj)
+    var strMin = obj.min!=undefined?`min="${obj.min}"`:''
+    var strMax = obj.max!=undefined?`max="${obj.max}"`:''
+    return htmlControlFormat(obj.selector,`<input ${strMin} ${strMax} ${obj.extension} prevval="${obj.value}" type="number" step="${obj.step}" ${strValue} class="form-control" val="${obj.code}" ${obj.required?'required':''}  ${obj.readonly&&readonly?'readonly':''}>`,obj.text,obj.required) 
 }
 
 function htmlControl_Period(obj,readonly=false){
@@ -225,6 +237,37 @@ function showPromptRemarks(required=false){
 }
 
 const hasDuplicates = array => new Set(array).size !== array.length;
+
+function testRegex(pattern, text) {
+    const regex = new RegExp(pattern);
+    return regex.test(text);
+}
+
+
+function fieldValidation(variable, value){
+    //required check
+    if (variable.required && !value) return({ok:false, message:`${variable.text} [required]`})
+
+    //regex check
+    if (value&&variable.regex) {     
+        var regex = regex_validations.filter(x=> x.code == variable.regex)[0]
+        var validationResult = testRegex(regex.pattern,value)
+        if(!validationResult) return({ok:false, message:`${variable.text} [Error on "${value}", ${regex.text}]`})
+    }
+    
+    //min max check
+    if (value < variable.min) return({ok:false, message:`${variable.text} [Min value is ${variable.min}]`})
+    if (value > variable.max) return({ok:false, message:`${variable.text} [Max value is ${variable.max}]`})
+
+    //code check
+    if(variable.code_structure=='regex'){
+        const isRegexPattern = str => { try { new RegExp(str); return true; } catch (error) { return false; } };
+        if(!isRegexPattern(value)) return({ok:false, message:`${variable.text} [Error on ${value}, invalid regex pattern]`})
+    }
+
+    return {ok:true}
+}
+
 
 var xx
 var x1
