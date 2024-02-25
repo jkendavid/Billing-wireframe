@@ -115,6 +115,9 @@ function htmlControl(obj,readonly=false){
             return htmlControl_Number(obj,readonly)
         case 'period':
             return htmlControl_Period(obj,readonly)
+        case 'bool':
+            obj.options=[{value:'true',text:'Yes'},{value:'false',text:'No'}]
+            return htmlControl_Option(obj,readonly)
         default:
     }
 }
@@ -137,7 +140,6 @@ function htmlControl_Period(obj,readonly=false){
 
 
 function htmlControl_Option(obj,readonly=false){
-    x1 = obj
     var htmlOption = []
     htmlOption.push(`<option value=""></option>`);
     if(!obj.options)obj.options = getOptionDomain(obj.code)

@@ -74,13 +74,19 @@
   optPartyCategories()
 
   const defaultHeader = [
-    {field_locs:'row',code:'owned',type:'domain',text:'Owned',required:true,editable:false,options:getOptionDomain('bool')},
-    {field_locs:'row',code:'code',type:'text',text:'Code',required:true,editable:false},
-    {field_locs:'row',code:'name',type:'text',text:'Name',required:true,editable:true},
+    {...getVariable('owned'),selector:'form',field_locs:'row',required:true,readonly:false,main:true},
+    {...getVariable('code'),selector:'form',field_locs:'row',required:true,readonly:false,main:true},
+    {...getVariable('name'),selector:'form',field_locs:'row',required:true,readonly:true},
   ]
+  
+  const detailFields = [
+    {...getVariable('index'),extension:'style="max-width:60px;"',value:1,required:true},
+    {...getVariable('period_from')},
+    {...getVariable('period_to')},
+  ]
+
   var partyRowHeaders = []
   var partyDetailHeaders = []
-  var partySplitfields
   const endHeaders = [
     {code:'status',text:'Status'},
     {code:'sub_status',text:'Sub Status',view:'sub_status_text'},
@@ -95,23 +101,21 @@
     var query = deepCopy(window_update_trans)
     .filter(x=> checkStatus(getLast(x.status).status) && x.window == 'parties')
     .map(tran=>{
-      var splitField = window_fields.filter(field=> field.category == tran.category && field.field_locs=='row').map(field=>field.field)
-      tran.splitKey = getSplitKey(tran.splits??[],splitField)
-      //pivot split field 
-      tran.splits.map(split=>{
-        var field = split.field
-        if(partySplitfields.includes(field))tran[split.field] = split.value
-      }) 
+      var party = parties.filter(x=> x.code == tran.party)[0]
+      partyRowHeaders.filter(x=> !x.main).map(field=>{
+        var data = (tran.fields.filter(x=> x.field == field.code)[0]??{}).data
+        party[field.code] = data?getLast(data).value:''
+      })
       //get last status of the transaction
       tran.statuslog = tran.status
       var stat = getLast(tran.status)
-      ;tran = {...tran,...stat}
+      ;tran = {...tran,...stat, ...party}
       var sub_status = approval_steps.filter(x=> x.code == tran.sub_status)[0]
       tran.sub_status_text = sub_status?sub_status.text:''
       tran.remarks = tran.statuslog.filter(x=> x.remarks).map(x=> `${x.update_by}: ${x.remarks}`).join('</br>')
       return tran
     })
-    return getGroupLast(query,['category','splitKey'])
+    return getGroupLast(query,['category','code'])
   }
 
   function refreshPartyTable(){    
@@ -119,7 +123,7 @@
     var table = $('#tableParties');
     var trHead = table.find('thead tr');
     trHead.empty();    
-    partyRowHeaders = defaultHeader
+    partyRowHeaders = deepCopy(defaultHeader)
     partyDetailHeaders = []
 
     //get fields for the category
@@ -130,7 +134,6 @@
       if(x.field_locs=='row')partyRowHeaders.push(variable)
       if(x.field_locs=='detail')partyDetailHeaders.push(variable)
     })
-    partySplitfields = partyRowHeaders.map(x=> x.code)
   
     //add headers to table
     var rowHeaders = [...partyRowHeaders,...endHeaders]    
@@ -154,7 +157,6 @@
   }
 
   function updateParty(item=''){
-    xx = item
     var update = item!='';
     var html = [];
     html.push('<div>');
@@ -162,35 +164,32 @@
     //Row controls
     var rowHeaders = []
     deepCopy(partyRowHeaders).map(header=>{
-      if(update)header.value = item.splits.filter(x=> x.field == "period")[0].value
-      if(header.type=='domain')header.options = getOptionDomain(header.code)
-      header.required = true
+      if(update){
+        header.value = item[header.code]
+      }
       html.push(htmlControl(header,update))
       rowHeaders.push(header.code)
     })
     html.push('</div>');  
     //Details Controls
     html.push('<div class="extFields">'); 
-    deepCopy(partyDetailHeaders).filter(x=> x.category == 'party').map(header=>{
+    deepCopy(partyDetailHeaders).map(header=>{
       var variable = getVariable(header.code)
       html.push(`<table class="table table-bordered detailtable" val='${variable.code}'>`); 
       var htmlHeaderTemp = []
-      var htmlRowTemp = []
-      var detailFields =  variable.reffields.filter(x=> !partyRowHeaders.map(y=>{return y.code}).includes(x) ) 
+      var htmlRowTemp = [];
       //header
-      detailFields.map(reffield=>{
-        var refVariable = getVariable(reffield)
-        refVariable.selector = 'table'
-        htmlHeaderTemp.push(`<th>${reffield}</th>`)
-        htmlRowTemp.push(`<td>${htmlControl(refVariable,update)}</td>`)
-      })      
-      html.push(`<tr>${htmlHeaderTemp}<th>${header.text}</th><td><a href="#" class="mx-2" onclick='updatePartyAddDetailRow(this,${JSON.stringify(variable)},${JSON.stringify(detailFields)})'>Add</a></td></tr>`)       
+      html.push(`<tr>`)
+      html.push(`<th>${variable.text}</th><th>Index</th><th>From</th><th>To</th>`)
+      html.push(`<td><a href="#" class="mx-2" onclick='updatePartyAddDetailRow(this,${JSON.stringify(variable)})'>Add</a></td>`)
+      html.push(`</tr>`)
+
       //rows
       if(update){
         var dataFields = item.fields.filter(x=> x.field == header.code)[0]??{data:[]}        
-        dataFields.data.map(refdata=>{
-          refdata.variable = variable
-          html.push(updatePartyDetailRow(variable,detailFields,refdata))
+        dataFields.data.map(data=>{
+          data.variable = variable
+          html.push(updatePartyDetailRow(variable,data))
         })        
       }
       rowHeaders.push(header.code)
@@ -202,29 +201,28 @@
     modal = modalShow(update?'New':'Update' + ' Party',html.join(''))
   }
 
-  function updatePartyDetailRow(variable,detailFields,refdata=''){
+  function updatePartyDetailRow(variable,refdata=''){
     var html =[]
     var update = refdata!=''
     html.push(`<tr class='detailrow'>`)
-    //reffields        
-    detailFields.map(reffield=>{
-      var refVariable = getVariable(reffield)
-      refVariable.selector = 'table'
-      if(update)refVariable.value = refdata.reffields.filter(x=> x.field == reffield)[0].value
-      html.push(`<td>${htmlControl(refVariable,update)}</td>`)
-    })
+
     //values          
     variable.selector = 'table'
     if(update)variable.value = refdata.value
     html.push(`<td>${htmlControl(variable,update)}</td>`)
+    
+    detailFields.map(detailField=>{
+      if(update)detailField.value = refdata[detailField.code]??''
+      html.push(`<td>${htmlControl(detailField,update)}</td>`)
+    })
     //button
     html.push(`<td><a href="#" class="mx-2" onclick="updatePartyRemoveDetailRow(this)">Remove</a></td>`)       
     html.push(`</tr>`)
     return html.join('')
   }
 
-  function updatePartyAddDetailRow(ctrl,variable,detailFields){
-    $(ctrl.closest('tbody')).append(updatePartyDetailRow(variable,detailFields))
+  function updatePartyAddDetailRow(ctrl,variable){
+    $(ctrl.closest('tbody')).append(updatePartyDetailRow(variable))
   }
 
   function updatePartyRemoveDetailRow(ctrl){
@@ -234,8 +232,6 @@
   function newPartyData(){
     return {
       window:'parties',
-      category:partyCategory,
-      splits:[],
       status:[{status:'draft',sub_status:'',update_by:getUser(),update_time:getCurrentTime(),remarks:''},],
       fields: []
     }
@@ -246,56 +242,48 @@
   }
 
   function getPartyTransItem(item){
-    return window_update_trans.filter(x=> x.category == partyCategory 
+    return window_update_trans.filter(x=> x.window == 'parties'
       && getLast(x.status).status!='canceled' 
-      & getSplitKey(x.splits,partySplitfields) == getSplitKey(item.splits,partySplitfields))
-  }
-
-  function hasOnProccessPartyVariable(variable,splitFields){   
-    var keyVal = getSplitKey(splitFields,variable.reffields) 
-    var splits = []
-    getLatestPartyData().filter(x=>x.status == 'submitted' && x.category!= partyCategory).map(tran=>{
-      tran.fields.filter(x=> x.field == variable.code).map(field=>{
-        field.data.map(data=>{
-          var onProcKeyVal = getSplitKey([...(tran.splits??[]), ...data.reffields??[]],variable.reffields)
-          if(onProcKeyVal==keyVal)splits.push(`Category: ${tran.category}, Variable: ${variable.code}, KeyValue: ${onProcKeyVal}`)
-        })
-      })
-    })
-    return splits      
+      && x.party == item.party)
   }
 
   function saveParty(ctrl,update){
     var errFields = []
     var newData = newPartyData()
     var modalBody = $(ctrl).closest('.modal-body') 
-
+    var partyData = {category:partyCategory}
     //required validation  
     $.each($(modalBody).find('.rowFields .form-control'),function(i,cell){
       var field = $(cell).attr('val');  
       var value = $(cell).val();
-      if(!value){
-        errFields.push(getVariable(field).text)
-      }else if(errFields.length==0){
-        newData.splits.push({field:field,value:value})
+      var variable = partyRowHeaders.filter(x=> x.code == field)[0]
+      if(!value&&variable.required){
+        errFields.push(variable.text)
+      }else if(variable.main){
+        partyData[field]=value
+      }else{
+        newData.fields.push({field:field,data:[{value:value}]}) 
       }
     })
+    newData.party = partyData.code
+
     $.each($(modalBody).find('.detailtable'),function(i,table){
       var field = $(table).attr('val'); 
+      var variable = partyRowHeaders.filter(x=> x.code == field)[0]
       var fieldData = {field:field, data:[]}
-      $.each($(table).find('.detailrow'),function(j,row){
-        var rowData = {reffields:[]}  
+      $.each($(table).find('.detailrow'),function(j,row){ 
+        var rowData = {}
         $.each($(row).find('.form-control'),function(k,cell){
           var rowfield =  $(cell).attr('val'); 
           var value = $(cell).val(); 
-          if(!value){
-            errFields.push(`${getVariable(field).text} [${j}]`)
-          }else if(errFields.length==0){
-            if(field==rowfield){
-              rowData.value = value
+          if(rowfield==field){
+            if(!value){
+              errFields.push(`${variable.text} [${j}]`)              
             }else{
-              rowData.reffields.push({field:rowfield,value:value})
+              rowData.value = value
             }
+          }else if(value){            
+            rowData[rowfield] = value
           }
         })
         if(rowData.value)fieldData.data.push(rowData)
@@ -307,46 +295,13 @@
       return
     }    
    
-    //duplicate refkey validation
-    errFields=[]
-    newData.fields.map(dataField=>{      
-      var reffieldsKeys = {}
-      var variable = getVariable(dataField.field)
-      dataField.data.map(data=>{
-        var reffieldkey = getSplitKey(data.reffields,variable.reffields)
-        if(reffieldsKeys[reffieldkey]){
-          errFields.push(`${variable.text} ${reffieldkey}`)
-        }else{
-          reffieldsKeys[reffieldkey]=true
-        }
-      })
-    })
-    if (errFields.length>0){
-      alert('Duplicate Error:\n• ' + errFields.join("\n• "));
+    //party code exist
+    if (!update&&parties.filter(x=> x.code == newData.code).length>0){      
+      alert(`Code: ${newData.code} already exist.`);
       return
     }
 
-    //with on proccess change variable validation
-    errFields=[]
-    newData.fields.map(dataField=>{      
-      var variable = getVariable(dataField.field)
-      dataField.data.map(data=>{
-        errFields = hasOnProccessPartyVariable(variable,[...(newData.splits??[]), ...data.reffields??[]])
-      })
-    })
-    if (errFields.length>0){
-      alert('Variable on update:\n• ' + errFields.join("\n• "));
-      return
-    }
-    
-    //previous transaction  exist warning
     var lastTrans = getPartyLatestTransItem(newData)
-    if(!update&&lastTrans){
-      var confirmation = confirm(`Split fields already exist. Continuing will update the existing record.`);
-      if (!confirmation) return
-    }
-
-    //previous transaction status validation
     var lastTransStatus = lastTrans?getLast(lastTrans.status).status:''
     if(lastTransStatus=='submitted'){
       alert(`A transaction with a 'submitted' status already exists; Creating another transaction is not allowed`)
@@ -358,6 +313,9 @@
     }
 
     //save data
+    if(!update){
+      parties.push(partyData)
+    }
     if(lastTransStatus=='draft'){ 
       Object.assign(lastTrans, newData);
     }else{
@@ -440,8 +398,12 @@
         newFields.push(field)
         var htmlVal = []
         datafield.data.map(data=>{
-          var refFields = data.reffields&&data.reffields.length>0?data.reffields.map(x=>x.value).join(' | ') +' | ':''  
-          htmlVal.push(refFields+data.value)   
+          console.log(data)
+          var refFields = [data.value]
+          detailFields.map(detailField=>{
+            if(data[detailField.code]) refFields.push(data[detailField.code])
+          })
+          htmlVal.push(refFields.join(' | '))   
         }) 
         var newVal = htmlVal.join('</br>')
         var prevVal = prevVals[field]??''

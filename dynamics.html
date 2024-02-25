@@ -149,7 +149,6 @@
   }
 
   function updateDynamic(item=''){
-    xx = item
     var update = item!='';
     var html = [];
     html.push('<div>');
@@ -157,8 +156,7 @@
     //Row controls
     var rowHeaders = []
     deepCopy(dynamicRowHeaders).map(header=>{
-      if(update)header.value = item.splits.filter(x=> x.field == "period")[0].value
-      if(header.type=='domain')header.options = getOptionDomain(header.code)
+      if(update)header.value = item.splits.filter(x=> x.field == header.code)[0].value
       header.required = true
       html.push(htmlControl(header,update))
       rowHeaders.push(header.code)
@@ -166,7 +164,7 @@
     html.push('</div>');  
     //Details Controls
     html.push('<div class="extFields">'); 
-    deepCopy(dynamicDetailHeaders).filter(x=> x.category == 'dynamic').map(header=>{
+    deepCopy(dynamicDetailHeaders).map(header=>{
       var variable = getVariable(header.code)
       html.push(`<table class="table table-bordered detailtable" val='${variable.code}'>`); 
       var htmlHeaderTemp = []

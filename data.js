@@ -26,8 +26,17 @@ var approval_steps = [
 ]
 
 var variables = [
-    {category:'system',code:'code',type:'text',text:'Code',description:'',active:'active',rounding:''},
-    {category:'system',field_locs:'row',code:'text',type:'text',text:'Text',description:'',active:'active',rounding:''},
+    {category:'system',code:'owned',type:'bool',text:'Owned'},
+    {category:'system',code:'code',type:'text',text:'Code'},
+    {category:'system',code:'name',type:'text',text:'Name'},
+    {category:'system',code:'period_from',type:'period',text:'Period From'},
+    {category:'system',code:'period_to',type:'period',text:'Period To'},
+    {category:'system',code:'index',type:'number',text:'Period To'},
+
+
+    
+    
+    
     {category:'system',code:'approval',type:'domain',text:'Approval Rule',description:'',active:'active',rounding:''},
     {category:'system',field_locs:'row',code:'var_type',type:'domain',text:'Type',description:'',active:'active',rounding:''},
     {category:'system',field_locs:'row',code:'field_locs',type:'domain',text:'Location',description:'',active:'active',rounding:''},
@@ -35,8 +44,7 @@ var variables = [
     {category:'system',field_locs:'row',required:false,code:'unit',type:'text',text:'Unit',description:'',active:'active',rounding:''},
     {category:'system',field_locs:'row',required:false,code:'rounding',type:'domain',text:'Rounding',description:'',active:'active',rounding:''},
     {category:'system',field_locs:'row',code:'name',type:'text',text:'Name',description:'',active:'active',rounding:''},
-    {category:'system',code:'owned',type:'domain',text:'Owned',description:'',active:'active',rounding:''},
-    {category:'system',code:'status',type:'text',text:'Status',description:'',active:'active',rounding:''},
+     {category:'system',code:'status',type:'text',text:'Status',description:'',active:'active',rounding:''},
     {category:'system',code:'sub_status',type:'text',text:'Sub Status',description:'',active:'active',rounding:''},
     {category:'system',code:'active_status',type:'text',text:'Active Status',description:'',active:'active',rounding:''},
     {category:'system',code:'update_by',type:'text',text:'Update By',description:'',active:'active',rounding:''},
@@ -155,14 +163,14 @@ var window_fields = [
 ]
 
 var parties = [
-    {category:'GEN',code:'GEN01', owned:'Yes'},
-    {category:'GEN',code:'GEN02', owned:'No'},
-    {category:'DU',code:'DU01', owned:'No'},
-    {category:'DU',code:'DU02', owned:'No'},
-    {category:'RES',code:'RES01', owned:'Yes'},
-    {category:'RES',code:'RES02', owned:'No'},
-    {category:'CC',code:'CC01', owned:'Yes'},
-    {category:'CC',code:'CC02', owned:'No'},
+    {category:'GEN',code:'GEN01', owned:'true'},
+    {category:'GEN',code:'GEN02', owned:'false'},
+    {category:'DU',code:'DU01', owned:'false'},
+    {category:'DU',code:'DU02', owned:'false'},
+    {category:'RES',code:'RES01', owned:'true'},
+    {category:'RES',code:'RES02', owned:'false'},
+    {category:'CC',code:'CC01', owned:'false'},
+    {category:'CC',code:'CC02', owned:'false'},
 ]
 
 var contracts = [
@@ -178,30 +186,19 @@ window_update_trans = [
         ],
         fields: [
             {field:'name',data:[
-                {period_start:'',period_end:'',index:-1,value:'Generator 12'}
+                {value:'Generator 12'}
             ]},
             {field:'seller_addr',data:[
-                {period_start:'',period_end:'',index:-1,value:'Gen 1 Address 1'}
+                {value:'Gen 1 Address 1'}
             ]},
             {field:'seller_tin',data:[
-                {period_start:'',period_end:'',index:-1,value:'000-000-0001'}
+                {value:'000-000-0001'}
             ]},
             {field:'seller_wesm_bid',data:[
                 {period_start:'',period_end:'',index:1,value:'GEN01',reffields:[{field:'index',value:1}]}
             ]},
             {field:'plant_sources',data:[
-                {value:'PLANT01',
-                reffields:[
-                    {field:'period_start',value:'2023-01'},
-                    {field:'period_end',value:'2023-12'},
-                    {field:'index',value:1}
-                ]},
-                {value:'PLANT02',
-                reffields:[
-                    {field:'period_start',value:'2024-01'},
-                    {field:'period_end',value:'2024-12'},
-                    {field:'index',value:1}
-                ]},
+                {period_start:'',period_end:'',index:1,value:'PLANT01'},
             ]},
         ]},    
     {window:'parties',party:'GEN02',
