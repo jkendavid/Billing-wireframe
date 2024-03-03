@@ -63,7 +63,7 @@
   optWindowWindows()
   
   const headers = [
-    {row:true,selector:'form',code:'code',text:'Code',readonly:true,required:true,type:'text'},
+    {...getVariable('code'),row:true,selector:'form',readonly:true,required:true},
     {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
     {row:true,selector:'form',code:'approval',view:'approval_text',text:'Approval Rule',readonly:false,required:false,type:'domain'},
     {row:false,selector:'form',code:'fields',view:'fields_text',text:'Fields',readonly:false,required:false,type:'domain'},

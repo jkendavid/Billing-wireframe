@@ -76,7 +76,6 @@
   const defaultHeader = [
     {...getVariable('owned'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
     {...getVariable('code'),selector:'form',field_locs:'row',required:true,readonly:true,main:true},
-    {...getVariable('name'),selector:'form',field_locs:'row',required:true,readonly:false},
   ]
   
   const detailFields = [
@@ -128,7 +127,7 @@
 
     //get fields for the category
     deepCopy(window_fields).filter(x=> x.category ==partyCategory).map(x=>{
-      var variable = deepCopy(variables).filter(y=> y.code == x.field)[0]
+      var variable = {...x,...deepCopy(variables).filter(y=> y.code == x.field)[0]}
       variable.selector = x.field_locs=='row'?'form':'table'
       if(x.field_locs=='row')partyRowHeaders.push(variable)
       if(x.field_locs=='detail')partyDetailHeaders.push(variable)

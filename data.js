@@ -37,12 +37,10 @@ var variables = [
     {category:'system',code:'period_from',type:'period',text:'Period From'},
     {category:'system',code:'period_to',type:'period',text:'Period To'},
     {category:'system',code:'index',type:'number',text:'Index', min:0, max:99}, 
-
     {category:'system',code:'contract',type:'domain',text:'Contract'},
     {category:'system',code:'buyer',type:'domain',text:'Buyer'},
     {category:'system',code:'seller',type:'domain',text:'Seller'},
     {category:'system',code:'billing_template',type:'domain',text:'Billing Template'},
-
     {category:'system',code:'period',type:'period',text:'Period'},
     {category:'system',code:'date',type:'domain',text:'Date'},
     {category:'system',code:'hour',type:'domain',text:'Hour'},
@@ -105,16 +103,23 @@ var rounding_rules =[
     {code:'index',text:'Index Rounding',decimal_place:4,description:'',},
     {code:'general',text:'General Rounding',decimal_place:8,description:'',},
 ]
+var tax_rules =[
+    {code:'vat',text:'VAT',calculation:'[value]*0.12'},
+]
 
 var window_fields = [    
-    {field:'seller_addr',category:'GEN',field_locs:'row' ,instance:'single',required:false},
+    {field:'name',category:'GEN',field_locs:'row' ,instance:'single',required:true},    
+    {field:'seller_addr',category:'GEN',field_locs:'row' ,instance:'single',required:true},
+    {field:'seller_addr',category:'GEN',field_locs:'row' ,instance:'single',required:true},
     {field:'seller_tin',category:'GEN',field_locs:'row' ,instance:'single',required:true},
     {field:'seller_wesm_bid',category:'GEN',field_locs:'detail' ,instance:'single',required:true},
-    {field:'plant_sources',category:'GEN',field_locs:'detail' ,instance:'single',required:true},
+    {field:'plant_sources',category:'GEN',field_locs:'detail' ,instance:'single',required:true},    
+    {field:'name',category:'DU',field_locs:'row' ,instance:'single',required:true},   
     {field:'buyer_addr',category:'DU',field_locs:'row' ,instance:'single',required:true},
     {field:'buyer_tin',category:'DU',field_locs:'row' ,instance:'single',required:true},
     {field:'buyer_wesm_bid',category:'DU',field_locs:'row' ,instance:'single',required:true},
     {field:'creditrating',category:'DU',field_locs:'row' ,instance:'single',required:true},
+    {field:'name',category:'RES',field_locs:'row' ,instance:'single',required:true},   
     {field:'buyer_wesm_bid',category:'RES',field_locs:'row' ,instance:'single',required:true},
     {field:'seller_wesm_bid',category:'RES',field_locs:'row' ,instance:'single',required:true},
     {field:'seller_addr',category:'RES',field_locs:'row' ,instance:'single',required:false},
@@ -123,15 +128,20 @@ var window_fields = [
     {field:'buyer_tin',category:'RES',field_locs:'row' ,instance:'single',required:true},
     {field:'seller_tin',category:'RES',field_locs:'row' ,instance:'single',required:true},
     {field:'buyer_tin',category:'RES',field_locs:'row' ,instance:'single',required:true},
+    {field:'name',category:'DCC',field_locs:'row' ,instance:'single',required:true},   
     {field:'buyer_addr',category:'DCC',field_locs:'row' ,instance:'single',required:false},
     {field:'buyer_tin',category:'DCC',field_locs:'row' ,instance:'single',required:true},
     {field:'buyer_tin',category:'DCC',field_locs:'row' ,instance:'single',required:true},
     {field:'buyer_wesm_bid',category:'DCC',field_locs:'row' ,instance:'single',required:true},
+    {field:'name',category:'CC',field_locs:'row' ,instance:'single',required:true},   
     {field:'buyer_addr',category:'CC',field_locs:'row' ,instance:'single',required:false},
     {field:'buyer_tin',category:'CC',field_locs:'row' ,instance:'single',required:true},
     {field:'buyer_wesm_bid',category:'CC',field_locs:'row' ,instance:'single',required:true},
     {field:'delivery_sein',category:'CC',field_locs:'row' ,instance:'multiple',required:true},
     {field:'msp',category:'CC',field_locs:'row' ,instance:'single',required:true},
+    
+    {field:'period_from',category:'PSA_COAL',field_locs:'row' ,instance:'single',required:true},
+    {field:'period_to',category:'PSA_COAL',field_locs:'row' ,instance:'single',required:true},
     {field:'plant_sources',category:'PSA_COAL',field_locs:'row' ,instance:'single',required:true},
     {field:'cc',category:'PSA_COAL',field_locs:'detail' ,instance:'single',required:true},
     {field:'crfr',category:'PSA_COAL',field_locs:'detail' ,instance:'single',required:true},
@@ -265,8 +275,6 @@ var billing_templates =[
     {code:'TEMPVERSION1',description:'Template Version 1'},
     {code:'TEMPVERSION1',description:'Template Version 2'},
 ]
-
-
 
 
 
@@ -632,3 +640,5 @@ var dataFinanceAccountLink =[
     ['RES01','BUYER','CRF[VAT]|FOM[VAT]|VOM[VAT]|ER194[VAT]|FUEL[VAT]','RESVATEV','RESVATRV'],
     ['RES01','BUYER','CRF[BASE]|FOM[BASE]|VOM[BASE]|ER194[BASE]|FUEL[BASE]','RESVATEV','RESVATRV'],
 ]
+
+
