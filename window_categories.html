@@ -69,23 +69,7 @@
     {row:false,selector:'form',code:'fields',view:'fields_text',text:'Fields',readonly:false,required:false,type:'domain'},
   ]
 
-  const fieldHeaders = [
-    {
-      selector:'table',code:'field_locs',text:'Location',readonly:false,required:true,type:'domain',
-      options:[{value:'row',text:'row'},{value:'detail',text:'detail'}]
-    },
-    {
-      selector:'table',code:'field',text:'Field',readonly:false,required:true,type:'domain'
-    },
-    {
-      selector:'table',code:'instance',text:'Instance',readonly:false,required:true,type:'domain',
-      options:[{value:'single',text:'single'},{value:'multiple',text:'multiple'}]
-    },
-    {
-      selector:'table',code:'required',text:'Required',readonly:false,required:true,type:'domain',
-      options:getOptionDomain('bool')
-    },
-  ]
+  var fieldHeaders = []
 
   function getWindowData(){
     return window_categories.filter(x=> x.window == windowWindow).map(x=> {
@@ -99,6 +83,25 @@
 
   function refreshTableWindows(){    
     windowWindow = $('#optWindowWindows').val();
+    fieldHeaders = [
+    {
+      selector:'table',code:'field_locs',text:'Location',readonly:false,required:true,type:'domain',
+      options:[{value:'key',text:'key'},{value:'row',text:'row'},{value:'detail',text:'detail'}].filter(x=> !(x.value=='key'&&windowWindow!='dynamics'))
+    },
+    {
+      selector:'table',code:'field',text:'Field',readonly:false,required:true,type:'domain'
+    },
+    {
+      selector:'table',code:'instance',text:'Instance',readonly:false,required:true,type:'domain',
+      options:[{value:'single',text:'single'},{value:'multiple',text:'multiple'}]
+    },
+    {
+      selector:'table',code:'required',text:'Required',readonly:false,required:true,type:'domain',
+      options:getOptionDomain('bool')
+    },
+  ];
+
+
     var table = $('#tableWindows');
     var trHead = table.find('thead tr');
     trHead.empty();
@@ -122,7 +125,7 @@
     })
 
     fieldHeaders.filter(x=> x.code == 'field')[0].options =
-      deepCopy(variables).filter(x=> ['partybuyer', 'partyseller'].includes(x.category) || (x.category === 'contract' && windowWindow === 'contracts') || ( ['system', 'dynamic'].includes(x.category) && windowWindow === 'dynamics') ).map(x=>{
+      deepCopy(variables).filter(x=> ['party'].includes(x.category) || (x.category === 'contract' && windowWindow === 'contracts') || ( ['system', 'dynamic'].includes(x.category) && windowWindow === 'dynamics') ).map(x=>{
           return {value:x.code,text:x.code}
       })
   }

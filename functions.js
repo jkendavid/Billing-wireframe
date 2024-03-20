@@ -52,7 +52,7 @@ function getOptionDomain(variable){
         case 'regex':
             regex_validations.forEach(x => options.push({value:x.code,text:x.code}));
             break;
-        case 'code_strucutre':
+        case 'code_structure':
             options.push({value:'regex',text:'Regex'})
             options.push({value:'formula',text:'Formula'})
             options.push({value:'query',text:'Query'})
@@ -127,7 +127,7 @@ function htmlControl_Period(obj,readonly=false){
 
 function htmlControl_Option(obj,readonly=false){
     var htmlOption = []
-    htmlOption.push(`<option value=""></option>`);
+    if(obj.blank??true)htmlOption.push(`<option value=""></option>`);
     if(!obj.options)obj.options = getOptionDomain(obj.code)
     obj.options.map(option=> {
         var selected = obj.value==option.value?'selected':''

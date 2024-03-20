@@ -56,42 +56,52 @@
   function optVariableCategories(){
     var opt =$('#optVariableCategories')
     opt.empty()   
-    opt.append(`<option value='partyseller'>Party Seller</option>`)
-    opt.append(`<option value='partybuyer'>Party Buyer</option>`)
+    opt.append(`<option value='party'>Party</option>`)
     opt.append(`<option value='contract'>Contract</option>`)
     opt.append(`<option value='dynamic'>Dynamic</option>`)
+    opt.append(`<option value='calculation'>Calculation</option>`)
     opt.append(`<option value='charge'>Charge</option>`)
+    opt.append(`<option value='tax'>Tax</option>`)
     opt.append(`<option value='external'>External</option>`)
+    opt.append(`<option value='freecode'>Free Code</option>`)
     opt.append(`<option value='system'>System</option>`)
   }
   optVariableCategories()
 
-  const headers = [
-    {
-      row:true,selector:'form',code:'type',text:'Type',readonly:true,required:true,type:'domain',
-      options:[
-        {value:'text',text:'Text'},
-        {value:'number',text:'Number'},
-        {value:'period',text:'Period'},
-        {value:'date',text:'Date'},
-        {value:'code',text:'Code'},
-        {value:'domain',text:'Domain'},
-      ],
-      extension:`onchange="updateVariableType(this)"`
-    },
-    {...getVariable('code'),row:true,selector:'form',readonly:true,required:true},
-    {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
-    {row:true,selector:'form',code:'description',text:'Description',readonly:false,required:false,type:'text'},
-    {row:false,selector:'form',code:'unit',text:'Unit',readonly:false,required:false,type:'text'},
-    {row:false,selector:'form',code:'min',text:'Min',readonly:false,required:false,type:'text'},
-    {row:false,selector:'form',code:'max',text:'Max',readonly:false,required:false,type:'text'},
-    {row:false,selector:'form',code:'rounding',view:'rounding_text',text:'Rounding Rule',readonly:false,required:false,type:'domain'},
-    {row:false,selector:'form',code:'domain_values',text:'Domain Values',readonly:false,required:true,type:'text'},
-    {row:false,selector:'form',code:'reffields',text:'Reference Fields',readonly:false,required:true,type:'text'},
-    {row:false,selector:'form',code:'regex',text:'Regex Validation',readonly:false,required:false,type:'domain'},
-    {row:false,selector:'form',code:'code_structure',text:'Code Structure',readonly:false,required:true,type:'domain'},
-  ]
+  var headers = []
+  function updateHeaders(){
+    headers = [
+      {
+        row:true,selector:'form',code:'type',text:'Type',readonly:true,required:true,type:'domain',
+        options:[
+          {value:'text',text:'Text'},
+          {value:'number',text:'Number'},
+          {value:'period',text:'Period'},
+          {value:'date',text:'Date'},
+          {value:'code',text:'Code'},
+          {value:'domain',text:'Domain'},
+        ],
+        extension:`onchange="updateVariableType(this)"`
+      },
+      {...getVariable('code'),row:true,selector:'form',readonly:true,required:true},
+      {row:true,selector:'form',code:'text',text:'Text',readonly:false,required:false,type:'text'},
+      {row:true,selector:'form',code:'description',text:'Description',readonly:false,required:false,type:'text'},
+      {row:false,selector:'form',code:'unit',text:'Unit',readonly:false,required:false,type:'text'},
+      {row:false,selector:'form',code:'min',text:'Min',readonly:false,required:false,type:'text'},
+      {row:false,selector:'form',code:'max',text:'Max',readonly:false,required:false,type:'text'},
+      {row:false,selector:'form',code:'rounding',view:'rounding_text',text:'Rounding Rule',readonly:false,required:false,type:'domain'},
+      {row:false,selector:'form',code:'domain_values',text:'Domain Values',readonly:false,required:true,type:'text'},
+      {row:false,selector:'form',code:'regex',text:'Regex Validation',readonly:false,required:false,type:'domain'},
+      {row:false,selector:'form',code:'code_structure',text:'Code Structure',readonly:false,required:true,type:'domain'},
+    ]
 
+    //number only for vat and charges
+    if(['charge','vat'].includes(variableCategory)){
+      var header= headers.filter(x=>x.code=='type')[0]
+      header.blank = false
+      header.options = [{value:'number',text:'Number'}]
+    }
+  }
   function getVariableData(){
     return variables.filter(x=> x.category == variableCategory).map(x=> {
       var rule = deepCopy(rounding_rules).filter(y=> y.code = x.rounding)[0]
@@ -101,12 +111,13 @@
     })
   }
 
-  function refreshTableVariables(){    
+  function refreshTableVariables(){   
     variableCategory = $('#optVariableCategories').val();
+    updateHeaders() 
     var table = $('#tableVariables');
     var trHead = table.find('thead tr');
     trHead.empty();
-    headers.map(header => {
+    headers.filter(x=> x.row).map(header => {
       trHead.append(`<th>${header.text}</th>`);
     });
     trHead.append(`<th></th>`);
@@ -117,7 +128,7 @@
     getVariableData().map(data=>{
       var strTr = [`<tr>`];
       var status
-      headers.forEach(header => {  
+      headers.filter(x=> x.row).forEach(header => {  
         strTr.push(`<td>${data[header.view??header.code] ?? ''}</td>`);     
       });
       strTr.push(`<td><a href="#" class="mx-2" onclick="updateVariable('${data.code}')">Edit</a></td>`)
@@ -157,17 +168,18 @@
     switch (type) {
         case 'number':  
           fields = ['min','max','unit','rounding']
-          break
+          break;
         case 'domain':  
           fields = ['domain_values']
-          break
-        default:
+          break;
         case 'text':  
           fields = ['regex']
-          break
+          break;
         case 'code':  
           fields = ['code_structure']
-          break
+          break;
+        default:
+          fields = []
     }
     
     if(variableCategory=='dynamic')fields.push('reffields')

@@ -73,8 +73,11 @@
   }
   optDynamicCategories()
 
+  var dynamicKeyHeaders = []
   var dynamicRowHeaders = []
+  var dynamicDetailKeyHeaders = []
   var dynamicDetailHeaders = []
+
   var dynamicSplitfields
   const endHeaders = [
     {code:'status',text:'Status'},
@@ -88,15 +91,24 @@
     const checkStatus = (status) => final ? status === 'approved' : status !== 'canceled';
 
     var query = deepCopy(window_update_trans)
-    .filter(x=> checkStatus(getLast(x.status).status) && x.window == 'dynamics')
+    .filter(x=> checkStatus(getLast(x.status).status) && x.window == 'dynamics' && x.category == dynamicCategory)
     .map(tran=>{
-      var splitField = window_fields.filter(field=> field.category == tran.category && field.field_locs=='row').map(field=>field.field)
-      tran.splitKey = getSplitKey(tran.splits??[],splitField)
-      //pivot split field 
-      tran.splits.map(split=>{
-        var field = split.field
-        if(dynamicSplitfields.includes(field))tran[split.field] = split.value
+      tran.splitKey = getSplitKey(tran.splits??[],dynamicKeyHeaders)
+
+      //pivot key fields 
+      deepCopy(dynamicKeyHeaders).map(header=>{
+        var field = header.code
+        var tranfield = tran.splits.filter(x=> x.field == field)[0]
+        tran[field] = tranfield?tranfield.value:''
       }) 
+
+      //pivot row fields 
+      deepCopy(dynamicRowHeaders).map(header=>{
+        var field = header.code
+        var tranfield = tran.rows.filter(x=> x.field == field)[0]
+        tran[field] = tranfield?tranfield.value:''
+      }) 
+      
       //get last status of the transaction
       tran.statuslog = tran.status
       var stat = getLast(tran.status)
@@ -114,27 +126,41 @@
     var table = $('#tableDynamics');
     var trHead = table.find('thead tr');
     trHead.empty();    
+    dynamicKeyHeaders = []
     dynamicRowHeaders = []
     dynamicDetailHeaders = []
+    dynamicDetailKeyHeaders = []
 
     //get fields for the category
     deepCopy(window_fields).filter(x=> x.category ==dynamicCategory).map(x=>{
       var variable = deepCopy(variables).filter(y=> y.code == x.field)[0]
       variable.selector = x.field_locs=='row'?'form':'table'
-      if( x.field_locs=='row'){
-        variable.readonly = true
-        variable.required = true
-        variable.selector = 'form'
-        dynamicRowHeaders.push(variable)
-      }else{
-        variable.selector = 'table'
-        dynamicDetailHeaders.push(variable)
+      switch (x.field_locs){
+        case 'key':
+          variable.readonly = true
+          variable.required = true
+          variable.selector = 'form'
+          dynamicKeyHeaders.push(variable)
+          break;
+        case 'row':
+          variable.required = true
+          variable.selector = 'form'
+          dynamicRowHeaders.push(variable)
+          break;
+        case 'detail':
+          variable.selector = 'table'
+          if(variable.category=='dynamic'){
+            dynamicDetailHeaders.push(variable)            
+          }else{
+            dynamicDetailKeyHeaders.push(variable)
+          }
+          break;
       }
     })
-    dynamicSplitfields = dynamicRowHeaders.map(x=> x.code)
+    dynamicSplitfields = deepCopy(dynamicKeyHeaders).map(x=> x.code)
   
     //add headers to table
-    var rowHeaders = [...dynamicRowHeaders,...endHeaders]    
+    var rowHeaders = deepCopy([...dynamicKeyHeaders,...dynamicRowHeaders,...endHeaders]) 
     rowHeaders.map(header => {
       trHead.append(`<th>${header.text}</th>`);
     });
@@ -143,7 +169,7 @@
     //add data
     var tbody = table.find('tbody');
     tbody.empty();    
-    getLatestDynamicData().filter(x=> x.category == dynamicCategory).map(data=>{
+    deepCopy(getLatestDynamicData()).filter(x=> x.category == dynamicCategory).map(data=>{
       var strTr = [`<tr>`];
       rowHeaders.map(header => {  
         strTr.push(`<td>${data[header.view??header.code]??''}</td>`);   
@@ -158,73 +184,75 @@
     var update = item!='';
     var html = [];
     html.push('<div>');
+    html.push('<div class="keyFields">'); 
+    //Key controls
+    var keyHeaders = []
+    deepCopy(dynamicKeyHeaders).map(header=>{
+      if(update)header.value = item.splits.filter(x=> x.field == header.code)[0].value
+      header.required = true
+      html.push(htmlControl(header,update))
+      keyHeaders.push(header.code)
+    })
+    html.push('</div>');
     html.push('<div class="rowFields">'); 
     //Row controls
     var rowHeaders = []
     deepCopy(dynamicRowHeaders).map(header=>{
-      if(update)header.value = item.splits.filter(x=> x.field == header.code)[0].value
+      if(update)header.value = item.rows.filter(x=> x.field == header.code)[0].value
       header.required = true
       html.push(htmlControl(header,update))
       rowHeaders.push(header.code)
     })
     html.push('</div>');  
     //Details Controls
-    html.push('<div class="extFields">'); 
-    deepCopy(dynamicDetailHeaders.filter(x=> x.category =='dynamic')).map(header=>{
-      var variable = getVariable(header.code)
-      html.push(`<table class="table table-bordered detailtable" val='${variable.code}'>`); 
-      var htmlHeaderTemp = []
-      var htmlRowTemp = []
-      xx = variable
-      var detailFields =  variable.reffields.filter(x=> !dynamicRowHeaders.map(y=>{return y.code}).includes(x) ) 
-      //header
-      detailFields.map(reffield=>{
-        var refVariable = getVariable(reffield)
-        refVariable.selector = 'table'
-        htmlHeaderTemp.push(`<th>${reffield}</th>`)
-        htmlRowTemp.push(`<td>${htmlControl(refVariable,update)}</td>`)
-      })      
-      html.push(`<tr>${htmlHeaderTemp}<th>${header.text}</th><td><a href="#" class="mx-2" onclick='updateDynamicAddDetailRow(this,${JSON.stringify(variable)},${JSON.stringify(detailFields)})'>Add</a></td></tr>`)       
-      //rows
-      if(update){
-        var dataFields = item.fields.filter(x=> x.field == header.code)[0]??{data:[]}        
-        dataFields.data.map(refdata=>{
-          refdata.variable = variable
-          html.push(updateDynamicDetailRow(variable,detailFields,refdata))
-        })        
-      }
-      rowHeaders.push(header.code)
-      html.push('</table>');   
-    }) 
-    html.push('</div>');  
-    html.push('</div>');
+    var dynamicHeaders = [...dynamicDetailKeyHeaders,...dynamicDetailHeaders];
+    if (dynamicHeaders.length>0) {
+      html.push('<div class="extFields">');  
+      html.push(`<table class="table table-bordered detailtable">`); 
+      html.push(`<tr>`);  
+      dynamicHeaders.map(header=>{
+        html.push(`<th>${header.text}</th>`); 
+      })
+      html.push(`<th><a href="#" class="mx-2" onclick='updateDynamicAddDetailRow(this)'>Add</a></th>`);   
+      html.push(`</tr>`); 
+
+      item.dynamic.map(data=>{
+        html.push(updateDynamicDetailRow(data)); 
+      })
+
+      html.push(`</table>`);   
+      html.push('</div>');
+    }
     html.push(`<button type="button" class="btn btn-primary" onclick="saveDynamic(this,${update})">Save</button>`)
     modal = modalShow(update?'New':'Update' + ' Dynamic',html.join(''))
   }
 
-  function updateDynamicDetailRow(variable,detailFields,refdata=''){
+  function updateDynamicDetailRow(refdata=''){
     var html =[]
     var update = refdata!=''
     html.push(`<tr class='detailrow'>`)
-    //reffields        
-    detailFields.map(reffield=>{
-      var refVariable = getVariable(reffield)
-      refVariable.selector = 'table'
-      if(update)refVariable.value = refdata.reffields.filter(x=> x.field == reffield)[0].value
-      html.push(`<td>${htmlControl(refVariable,update)}</td>`)
+
+    deepCopy(dynamicDetailKeyHeaders).map(header=>{
+      if(update)header.value = refdata.splits.filter(x=> x.field == header.code)[0].value
+      html.push(`<td class="detailkey">${htmlControl(header,update)}</td>`)
     })
-    //values          
-    variable.selector = 'table'
-    if(update)variable.value = refdata.value
-    html.push(`<td>${htmlControl(variable,update)}</td>`)
+
+    deepCopy(dynamicDetailHeaders).map(header=>{
+      if(update){
+        var data = refdata.data.filter(x=> x.field == header.code)[0]
+        header.value = data?data.value:''
+      }
+      html.push(`<td class="detailvalue">${htmlControl(header,update)}</td>`)
+    })
+
     //button
     html.push(`<td><a href="#" class="mx-2" onclick="updateDynamicRemoveDetailRow(this)">Remove</a></td>`)       
     html.push(`</tr>`)
     return html.join('')
   }
 
-  function updateDynamicAddDetailRow(ctrl,variable,detailFields){
-    $(ctrl.closest('tbody')).append(updateDynamicDetailRow(variable,detailFields))
+  function updateDynamicAddDetailRow(ctrl){
+    $(ctrl.closest('tbody')).append(updateDynamicDetailRow())
   }
 
   function updateDynamicRemoveDetailRow(ctrl){
@@ -237,7 +265,8 @@
       category:dynamicCategory,
       splits:[],
       status:[{status:'draft',sub_status:'',update_by:getUser(),update_time:getCurrentTime(),remarks:''},],
-      fields: []
+      rows: [],
+      dynamic: []
     }
   }
 
@@ -251,26 +280,24 @@
       & getSplitKey(x.splits,dynamicSplitfields) == getSplitKey(item.splits,dynamicSplitfields))
   }
 
-  function hasOnProccessDynamicVariable(variable,splitFields){   
-    var keyVal = getSplitKey(splitFields,variable.reffields) 
-    var splits = []
-    getLatestDynamicData().filter(x=>x.status == 'submitted' && x.category!= dynamicCategory).map(tran=>{
-      tran.fields.filter(x=> x.field == variable.code).map(field=>{
-        field.data.map(data=>{
-          var onProcKeyVal = getSplitKey([...(tran.splits??[]), ...data.reffields??[]],variable.reffields)
-          if(onProcKeyVal==keyVal)splits.push(`Category: ${tran.category}, Variable: ${variable.code}, KeyValue: ${onProcKeyVal}`)
-        })
-      })
-    })
-    return splits      
-  }
-
   function saveDynamic(ctrl,update){
     var errFields = []
     var newData = newDynamicData()
     var modalBody = $(ctrl).closest('.modal-body') 
 
-    //required validation  
+    //key fields
+    $.each($(modalBody).find('.keyFields .form-control'),function(i,cell){
+      var field = $(cell).attr('val');  
+      var value = $(cell).val();
+      var validationResult = fieldValidation(dynamicKeyHeaders.filter(x=> x.code == field)[0],value)
+      if (!validationResult.ok){
+        errFields.push(validationResult.message)
+      } else{
+        newData.splits.push({field:field,value:value})
+      }
+    })
+
+    //row fields
     $.each($(modalBody).find('.rowFields .form-control'),function(i,cell){
       var field = $(cell).attr('val');  
       var value = $(cell).val();
@@ -278,67 +305,55 @@
       if (!validationResult.ok){
         errFields.push(validationResult.message)
       } else{
-        newData.splits.push({field:field,value:value})
+        newData.rows.push({field:field,value:value})
       }
     })
-    $.each($(modalBody).find('.detailtable'),function(i,table){
-      var field = $(table).attr('val'); 
-      var fieldData = {field:field, data:[]}
-      $.each($(table).find('.detailrow'),function(j,row){
-        var rowData = {reffields:[]}  
-        $.each($(row).find('.form-control'),function(k,cell){
-          var rowfield =  $(cell).attr('val'); 
-          var value = $(cell).val(); 
-
-          var variable = getVariable(field)
-          variable.required = true
-          var validationResult = fieldValidation(variable,value)
-          if (!validationResult.ok){
-            errFields.push(validationResult.message)
-          }else if(field==rowfield){
-              rowData.value = value
-          }else{
-            rowData.reffields.push({field:rowfield,value:value})
-          }         
-        })
-        if(rowData.value)fieldData.data.push(rowData)
-      })      
-      newData.fields.push(fieldData) 
-    })
+    
+    //detail field
+    $.each($(modalBody).find('.detailrow'),function(j,row){
+      var splits = []
+      var data = []
+      //key
+      $.each($(row).find('.detailkey .form-control'),function(k,cell){
+        var field = $(cell).attr('val');  
+        var value = $(cell).val();
+        var validationResult = fieldValidation(deepCopy(dynamicDetailKeyHeaders).filter(x=> x.code == field)[0],value)
+        if (!validationResult.ok){
+          errFields.push(validationResult.message)
+        } else{
+          splits.push({field:field,value:value})
+        }       
+      })
+      //value      
+      $.each($(row).find('.detailvalue .form-control'),function(k,cell){
+        var field = $(cell).attr('val');  
+        var value = $(cell).val();
+        var validationResult = fieldValidation(deepCopy(dynamicDetailHeaders).filter(x=> x.code == field)[0],value)
+        if (!validationResult.ok){
+          errFields.push(validationResult.message)
+        } else{
+          data.push({field:field,value:value})
+        }       
+      })
+      newData.dynamic.push({splits,data})
+    })    
     if (errFields.length>0){
       alert('Error fields: \n• ' + errFields.join("\n• "));
       return
     }    
    
     //duplicate refkey validation
-    errFields=[]
-    newData.fields.map(dataField=>{      
-      var reffieldsKeys = {}
-      var variable = getVariable(dataField.field)
-      dataField.data.map(data=>{
-        var reffieldkey = getSplitKey(data.reffields,variable.reffields)
-        if(reffieldsKeys[reffieldkey]){
-          errFields.push(`${variable.text} ${reffieldkey}`)
-        }else{
-          reffieldsKeys[reffieldkey]=true
-        }
-      })
+    var reffieldsKeys = {}
+    newData.dynamic.map(dynamic=>{
+      var reffieldkey = getSplitKey(dynamic.splits,dynamicDetailKeyHeaders.map(x=> x.code))
+      if(reffieldsKeys[reffieldkey]){
+        errFields.push(reffieldkey)
+      }else{
+        reffieldsKeys[reffieldkey]=true
+      }
     })
     if (errFields.length>0){
       alert('Duplicate Error:\n• ' + errFields.join("\n• "));
-      return
-    }
-
-    //with on proccess change variable validation
-    errFields=[]
-    newData.fields.map(dataField=>{      
-      var variable = getVariable(dataField.field)
-      dataField.data.map(data=>{
-        errFields = hasOnProccessDynamicVariable(variable,[...(newData.splits??[]), ...data.reffields??[]])
-      })
-    })
-    if (errFields.length>0){
-      alert('Variable on update:\n• ' + errFields.join("\n• "));
       return
     }
     
@@ -438,27 +453,35 @@
       html.push('<table class="table table-sm table-condensed table-bordered">')
       html.push(`<tr><th></th><th>Old</th><th>New</th></tr>`)
       var newFields = []
-      tran.fields.map(datafield=>{
-        var field = datafield.field
+      //for rows
+      tran.rows.map(row=>{
+        var field = row.field
         newFields.push(field)
-        var htmlVal = []
-        datafield.data.map(data=>{
-          var refFields = data.reffields&&data.reffields.length>0?data.reffields.map(x=>x.value).join(' | ') +' | ':''  
-          htmlVal.push(refFields+data.value)   
-        }) 
-        var newVal = htmlVal.join('</br>')
+        var newVal = row.value
         var prevVal = prevVals[field]??''
         if(prevVal!=newVal&&newstat){
           html.push(`<tr><td>${getVariable(field).text}</td><td>${prevVal}</td><td>${newVal}</td></tr>`)
           if(newstat=='approved')prevVals[field]=newVal
         }
       }) 
-      
+
+      //for dynamic
+      tran.dynamic.map(dynamic=>{
+        var split = [...dynamic.splits.map(x=> x.field),...dynamic.data.map(x=> x.field)].join(' | ')
+        newFields.push(split)
+        var newVal =  [...dynamic.splits.map(x=> x.value),...dynamic.data.map(x=> x.value)].join(' | ')
+        var prevVal = prevVals[split]??''
+        if(prevVal!=newVal&&newstat){
+          html.push(`<tr><td>${split}</td><td>${prevVal}</td><td>${newVal}</td></tr>`)
+          if(newstat=='approved')prevVals[split]=newVal
+        }
+      }) 
+
       //for deleted values
       prevFields.filter(x=> !newFields.includes(x)).map(field=>{
-        console.log(prevVals)
         html.push(`<tr><td>${getVariable(field).text}</td><td>${prevVals[field]??''}</td><td></td></tr>`)
       })
+
       html.push('</table>')
       html.push('</div>')
       prevFields = newFields
